@@ -1,0 +1,189 @@
+---
+title: "Project Assignment"
+output:
+  html_document:
+    toc: true
+header-includes:
+  - \usepackage{bm}
+  - \newcommand{\E}{\mathbb{E}}
+  - \newcommand{\var}{\mathrm{var}}
+  - \newcommand{\R}{\mathbb{R}}
+  - \newcommand{\argmin}{\mathrm{arg\,min\;}}
+  - \newcommand{\rank}{\mathrm{rank}}
+  - \newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
+library(tidyverse)
+```
+
+## Multi-dimensional Covariances
+
+Consider a random element $X$ of some space. Regardless of the space, $\E X =: \mu$ is always element of that space and $\mathrm{cov}(X) = \E[ (X - \E X) \otimes (X - \E X) = C$ where the symbol "$\otimes$" denotes the tensor product.
+
+### Discrete Case
+
+In the case of the underlying space being discrete, things are fairly straightforward:
+
+* $X \in \R$ is a real number $\Rightarrow$ the tensor product is just standard multiplication and $C \in R$ is a real number
+* $X \in \R^p$ is a vector $\Rightarrow$ the tensor product is the outer product and $C \in \R^{p \times p}$ is a matrix
+    - $v \otimes v = v v^\top$ for a vector $v$ where $v v^\top$ is the matrix-matrix multiplication
+* $X \in \R^{p_1 \times p_2}$ is a matrix $\Rightarrow$ the tensor product is still the outer product and $C \in \R^{p_1 \times p_2 \times p_1 \times p_2}$ is a tensor
+    - more generally tensor product of tensor $A \in \R^{p_1 \times \ldots \times p_k}$ and a tensor $B \in \R^{q_1 \times \ldots \times q_l}$, the tensor $C := A \otimes B \in \R^{p_1 \times \ldots \times p_k \times q_1 \times \ldots \times q_l}$ with entries $c_{i_1,\ldots,i_k,j_1,\ldots,j_l} = a_{i_1,\ldots,i_k}b_{j_1,\ldots,j_l}$
+
+The covariance simply tells what is the linear dependence between two points on a domain. E.g. for $X \in \R^{p_1 \times p_2}$, $c_{i_1,j_1,i_2,j_2} = \E[ (x_{i_1,j_1} - \E x_{i_1,j_1}) \otimes (x_{i_2,j_2} - \E x_{i_2,j_2})$ (where the symbol "$\otimes$" can be dropped since these things are just numbers). This pointwise interpretation is everything when things are discrete.
+
+A vector is always considered an element of a vector space, while a matrix $C$ can be considered as either an element of a larger (tensor product) vector space $\R^{p_1} \otimes \R^{p_2} = \R^{p_1 \times p_2}$ or as a linear operator from $\R^{p_2}$ to $\R^{p_1}$. Since vectors always come to this operator from the right hand side (as in $M v$ for a matrix $M$ and a vector $v$), there is no confusion. Also, matrix-vector multiplication (as a special case of the matrix-matrix multiplication) actually corresponds to application of the matrix to the vector.
+
+There is, however, some ambiguity with tensors. If $C \in \R^{p_1 \times p_2 \times p_1 \times p_2}$ is considered a linear operator, one does not know how many of the four dimensions are input dimensions and how many are output dimensions. But when we know that $C$ is a covariance of $X \in \R^{p_1 \times p_2}$, it is immediately clear, since the covariance should be an operator on the underlying space.
+
+When $C \in \R^{p \times p}$, it has an eigendecomposition, since as a covariance it is self-adjoint:
+$$
+C = \sum_{j=1}^{p} \lambda_j v v^\top = \sum_{j=1}^{p} \lambda_j v \otimes v = V \Lambda V^\top.
+$$
+For a general matrix $M \in \R^{p_1 \times p_2}$, we have the SVD:
+$$
+M = \sum_{j=1}^{p_1 \wedge p_2} \sigma_j u_j \otimes v_j = U \Sigma V^\top.
+$$
+The spectrum, i.e. the eigenvalues $\lambda_j$ (or singular values $\sigma_j$), is ordered non-increasingly. The eigenvectors $v_j$ (or the right singular vectors $v_j$) are orthogonal (and similarly for the left singular vectors $u_j$). If there exists and $r$ such that for all $j > r$ we have $\lambda_j=0$ (or $\sigma_j=0$), then $C$ (or $M$) is of rank $r$.
+
+Any function of $C$ is defined as the corresponding real-valued function acting on its spectrum, e.g.:
+
+* the square-root of $C$ is $C^{1/2} = \sum_{j=1}^{p} \lambda_j^{1/2} v \otimes v$,
+* the inverse of $C$ is $C^{-1} = \sum_{j=1}^{p} \lambda_j^{-1} v \otimes v$, if the formula makes sense:
+    - as a covariance matrix, $C$ is positive semi-definite, i.e. $\lambda_j \geq 0$,
+    - $a^{-1}$ is not defined for $a = 0$, so the inverse exists and is defined by the formula iff $C$ is full rank ($r=p$).
+
+### Continuous Case
+
+When the underlying space is discrete, things appear mathematically more complicated at first, but they also turn out clearer and more straightforward after the initial investment. For example:
+
+* $X \in \mathcal{L}^2[0,T]$ instead of $X \in \R^p$ $\Rightarrow$ $C \in \mathcal{L}^2([0,T]^2)$
+    - instead of a vector $X \in R^p$ we have a square integrable function $x=x(t)$ on $[0,T]$ and the covariance is (isomorphically isometric to) a square integrable function $c=c(t,s)$, typically called *kernel*
+    - instead of a matrix-vector product $Y = C X \in R^p$ we have the integral $y(t) = \int_0^T c(t,t') x(t') dt'$ resulting in a function $y=y(t)$
+* $X \in \mathcal{L}^2([0,T]\times[0,S])$ instead of $X \in \R^{p_1 \times p_2}$ $\Rightarrow$ $C \in \mathcal{L}^2([0,T]\times[0,S]\times[0,T]\times[0,S])$
+    - here $x=x(t,s)$ and $c=c(t,s,t,s)$
+    - instead of a strange tensor-matrix product the meaning of "$Y = C X$" is clear: $Y$ is a function $y=y(t,s)$ given by $y(t,s) = \int_0^T \int_0^S c(t,s,t',s') x(t',s') dt'ds'$
+* in the above $T,S > 0$, typically we can take $T=S=1$ w.l.o.g.
+
+We have to assume that all the functions are continuous, otherwise we could run into theoretical problems (with measurability).
+
+We can explore this in a greater detail later, but for now the most important thing is the following: the eigenvalues of $C$ decay to zero relatively fast (covariance operators are trace-class) and hence $C^{-1}$ either doesn't exist or it is unbounded (i.e. it does not exist for practical purposes). Intuitively, this is because the the trace of $C$ corresponds to the overall variability of the random element $X$:
+$$
+\mathrm{tr}(C) = \E \|X - \E X\|_2^2
+$$
+In the discrete case of $X = (X_1,\ldots,X_p)^\top \in \R^p$ this simply means
+$$
+\mathrm{tr}(C) = \sum_{j=1}^p c_{jj} = \sum_{j=1}^p \E(X_j - \E X_j)^2 = \E \| X - \E X \|_2^2,
+$$
+while in the continuous case of $X \in \mathcal{L}^2[0,T]$ the equation above can be written using integrals as
+$$
+\mathrm{tr}(C) = \int_0^T c(t,t) dt = \int_0^T [ x(t) - \mu(t) ]^2 dt = \E \|X - \mu\|_2^2
+$$
+for $\mu = \E X$. So it should be intuitively clear that if $X$ is supposed to be continuous and square integrable, the trace of $C$ has to be finite, but the trace of $C$ is also the sum of the (infinite sequance of positive) eigenvalues of $C$, so the eigenvalues of $C$ have to converge to 0 (relatively fast), and hence the inverse of $C$ defined by inverting the eigenvalues explodes.
+
+Of course, real data are never observed continuously, rather there are observed on a grid (even though time is continuous, we cannot measure every frequency continuously, and even though there are in principle infinite number of frequencies, we cannot go past a certain number). So in practice, the integrals above are replaced again by sums and one performs opperations on arrays instead of multivariate functions. But if there is an underlying continuous phenomenon that is being discretized, it depends on the resolution whether covariance inverses will be meaningful or not.
+
+### Separability
+
+We are interested in the case of a two-dimensional domain, regardless of whether we see the data as discrete or as continuous:
+
+* $X \in \R^{p_1 \times p_2}$, $C \in \R^{p_1 \times p_2 \times p_1 times p_2}$
+    - $X = [x_{ij}]_{i,j}^{p_1,p_2}$ is a matrix
+    - $C = [c_{iji'j'}]_{i,j,i',j'=1}^{p_1,p_2,p_1,p_2}$ is a 4-way tensor
+* $X \in \mathcal{L}^2([0,1]^2)$, $C \in \mathcal{L}^2([0,1]^4)$
+    - $X$ corresponds to a bivariate function $x(t,s)$ for $t,s \in (0,1)$
+    - $C$ corresponds to a function of 4 variables $c(t,s,t',s')$ for $t,s,t',s' \in [0,1]$
+    
+A covariance is called *separable* if
+
+* $c_{iji'j'} = a_{ii'} b_{jj'}$ for some $A = [a_{ii'}]_{i,i'=1}^{p_1,p_1}$ and $B = [b_{jj'}]_{j,j'=1}^{p_2,p_2}$
+* $c(t,s,t',s') = a(t,t') b(s,s')$, where $a$ and $b$ are kernels corresponding to some $A \in \mathcal{L}^2([0,T]^2)$ and $B \in \mathcal{L}^2([0,S]^2)$ (here I write explicitly $T$ and $S$ instead of 1 for the sake of exposition)
+    
+## Data
+
+The goal of this project is to compare different covariance estimators on the task of classifying spectograms used as illustration in Hoff et al. (2022) [folder `speech_data_Hoff`], however it might be easier to start working with a smaller, toy data set.
+
+We also have an alternative data set from Aston et al. (2017), but classification into languages probably does not make sense there, since means were discarded and the assumption is that the languages differ in covariances.
+
+### Toy Data
+
+Files `alcData.RData`, resp. `conData.RData`, contain brain responses (as measured by EEG) of alcoholic, resp. non-alcoholic, patiets to some visual stimuli. Similar data were used in Masak et al. (2022). The original data has been (quite arbitrarily) pre-processed into two data frames available in the aforementioned `.Rdata` files. Both of these files now contain an $N \times S \times T$ array, where
+
+* $N=1,\ldots,76$, resp. $N=1,\ldots,45$, are different patients,
+* $s=1,\ldots,64$ are EEG electrodes,
+* $t=1,\ldots,256$ are time points.
+
+We are not interested in this data set at all, this is just to play around with a simple data set before we go to the main data set.
+
+Another approach to obtain some toy data set to play it would be to simulate it. But what means and covariances and means to use?
+
+### Real Data
+
+The real data are in in a `.tar.gz` file (need to be unzipped). Warden (2018) describes the data, but the description in the `README.txt` and Hoff et al. (2022) should be sufficient.
+
+Hoff et al. (2022) first transforms the `.wav` data files into the spectograms using the `tuneR` package. This has to be emulated as a part of the project. This turns the data into array of the form $N \times K \times T$ with $S$ representing the cepstral coefficients. Hoff et al. (2022) use $S=13$ and it appers they do not bump into regularity issues. Should we maybe keep a higher $K$ and see what happens.
+
+## Classification Methods
+
+We are interested in linear discriminant analysis (LDA) or quadratic discriminant analysis (QDA), as a specific area of application of covariance estimation. Naturally, better covariance estimates will lead to better classifiers (when all means are estimated empirically).
+
+### Two-class Problem
+
+A derivation of two-class LDA found in Murphy (2012), ending with formula (4.50), shows that an observation $x$ of class $y$ is classified into group 0 or 1 with the rule
+$$
+\widehat{y} = \mathbb{I}_{[\langle X-\mu_0,w \rangle > -\langle X-\mu_1, w \rangle]}
+$$
+where $w$ solves the linear problem involving the covariance:
+$$
+C w = \mu_1-\mu_2.
+$$
+[classify as 1 if the probability in (4.50) is >1/2, i.e. if the sigmoid function argument is >0, which is equivalent to the above]
+
+It can also be seen that the decision rule $\widehat{y}$ above is equivalent to calculating scores
+$$
+s_k(x) = (x-\mu_k)^\top C^{-1}(x-\mu_k)
+$$
+for the observed $x$ and classes $k=1,2$, and classifying $x$ to the class $k$ with the minimum score $s_k(x)$. [consider the rule $s_0(x) > s_1(x)$, add $\pm \mu_1$ on the left and $\pm \mu_0$ on the right, and arrive to the rule $\langle X-\mu_0,w \rangle > -\langle X-\mu_1, w \rangle$.
+
+Murphy (2012) also provides a discussion of regularization techniques in Sections 4.2.5 and 4.2.6.
+
+We prefer the first formulation above since it does not involve the inverse of $C$, because the inverse may not exist. Can more than a two-class problem be formulated in this way? Can QDA be formulated in this way? (Such that we only need to solve a certain fixed number of inverse problems involving covariances and then classify arbitrary amount of new data without excessive computational costs?) Even if not, we can always regularize (we need to regularize the linear problem anyway) and calculate the inverses in a costly manner and then do our things.
+
+## Methods to be compared
+
+* empirical estimator
+* separable estimator via MLE
+* separable estimator via the least squares approximation to the empirical covariance
+    - i.e. $R=1$ in Masak et al. (2022)
+* separable-core shrinkage of Hoff et al. (2022)
+* $R$-separable covariance of Masak et al. (2022)
+    - $R=2$ or $R=3$
+* partially separable estimator of Zapata et al. (2022)
+    - there will be two different estimators depending on which direction ()
+* weakly separable estimator of Lynch & Chen (2018)
+
+## Questions and Goals
+
+About Hoff et al. (2022), there are the following questions:
+
+1. Are there no invertibility issues? Truly no regularization is needed?
+2. Does partial pooling (which is something between LDA and QDA) work well just because the data are functional and LDA works really well for functional data?
+3. Does the proposed estimator work well simply because it is shrinkage and as such prevents overfitting (i.e. will all shrinkage estimators - used possibly instead of regularization if regularization would be needed - perform better)?
+4. Is MLE superior compared to the least-squares approximation and how much?
+
+Then of course we are interested in how the methods of Masak et al. (2022), Lynch & Chen (2018) and Zapata et al. (2022) work on the real data, and whether QDA is superior to LDA even though the data is functional.
+
+## References
+
+* Aston, Pigoli & Tavakoli (2017) Tests for separability in nonparametric covariance operators of random surfaces
+* Hoff, McCormack & Zhang (2022) Core Shrinkage Covariance Estimation for Matrix-variate Data
+* Masak, Sarkar & Panaretos (2022) Separable Expansions for Covariance Estimation via the Partial Inner Product
+* Warden (2018) Speech Commands: A Dataset for Limited-Vocabulary Speech Recognition
+* Murphy (2012) Machine learning: a probabilistic perspective
+* Lynch & Chen (2018) Test of weak separability for multi-way functional data, with application to brain connectivity
+* Zapata, Oh & Petersen (2022) Partial separability and functional graphical models for multivariate Gaussian processes
+
+
+
