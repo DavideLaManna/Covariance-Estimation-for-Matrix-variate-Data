@@ -1,0 +1,142 @@
+---
+title: "Preprocessing"
+author: "Davide la Manna"
+date: '2023-03-13'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# uploading .wav data
+
+To begin with, we will upload a random .wav file representing a "yes".
+
+```{r}
+library(tuneR)
+setwd("C:/Users/david/OneDrive/Desktop/semester project/git/SemesterProject/speech_commands_v0.02.tar/speech_commands_v0.02/yes")
+file_list <- list.files()  
+random_file <- sample(file_list, 1) 
+audio <- readWave(random_file)
+```
+
+let's try to display and reproduce the following file
+
+```{r plot}
+plot(audio)
+play(audio)
+```
+
+# investigate the class "yes"
+
+Let us now go on to calculate mean and correlation of the MFCC of the word "yes"
+
+```{r}
+library(abind)
+ncep=13 #number of cepstral coefficients required
+time=99 #number of time intervals
+nfile=length(file_list)
+mfccs <- NULL
+path="C:/Users/david/OneDrive/Desktop/semester project/git/SemesterProject/speech_commands_v0.02.tar/speech_commands_v0.02/yes"
+# Loop through all the .wav files in the "yes" folder.
+for (file in file_list) {
+    # load file .wav
+  wav <- readWave(file.path(path, file))
+  
+  # compute the MFCC
+  mfcc <- melfcc(wav, numcep = 13)
+  # I solve the problem given by the fact that the audio files do not all     have the same time length by adding zeros to the matrix to force them     to have the same size
+  mfcc99 <- matrix(rep(0, time*ncep), ncol = 13)
+  mfcc99[1:dim(mfcc)[1],] <- mfcc
+
+  
+ # Add MFCC to MFCCs
+  
+mfccs <- abind(mfccs, mfcc99, along = 3)
+}
+```
+
+It appears from the analysis that there are approximately 20000 nan values
+
+```{r}
+summary(mfccs)
+```
+
+since it represents a considerably small value compared to `ncep`\*`time`\*`nfile`, we decide for the moment to replace these nan values with zeros (hoping that our analysis is still good)
+
+```{r}
+mfccs[is.nan(mfccs)]<-0
+```
+
+We now save the tensor with preprocessed data
+
+```{r}
+save(mfccs, file = "yesP.RData")
+```
+
+In order to investigate the data, we decide to calculate the mean and correlation of our data and plot the values
+
+```{r}
+mean <- apply(mfccs, c(1,2), mean)
+```
+
+this command calculates the average along the third dimension returning us a matrix of size `ncep`\*`time` that we plot
+
+```{r plot}
+image(t(mean),xlab = "mfcc", ylab = "Time")
+```
+
+for the correlation we decide to transform the array into a matrix of dimension `ncep`\*`time` $\times$ `nfile` and calculate the correlation, obtaining a but matrix of dimension `ncep`\*`time` $\times$`ncep`\*`time` which we plot
+
+```{r}
+vectorized = matrix(mfccs, ncol = ncep*time, byrow = TRUE)
+corr=cor(vectorized)
+```
+
+As can also be seen from the graph, some correlation values are outliers, creating white lines in the graph. This phenomenon is probably related to the presence of zero values in the data array.
+
+```{r plot}
+image(corr)
+```
+
+# Preprocess all the data
+
+We act the same way with all the other classes. For memory reasons we decide not to save all labeled data in one tensor but save the preprocessed data separately and add labels when the classification process starts.
+
+to this end we need only update the previous code with a for loop to perform the operation on all folders
+```{r}
+library(abind)
+ncep=13 #number of cepstral coefficients required
+time=99 #number of time intervals
+path="C:/Users/david/OneDrive/Desktop/semester project/git/SemesterProject/speech_commands_v0.02.tar/speech_commands_v0.02"
+setwd(path)
+
+list_dirs=list.dirs()
+for (dir in list_dirs) {
+    file_list <- list.files(dir)  
+nfile=length(file_list)
+mfccs <- NULL
+
+# Loop through all the .wav files in the "yes" folder.
+for (file in file_list) {
+    # load file .wav
+  wav <- readWave(file.path(path,dir, file))
+  
+  # compute the MFCC
+  mfcc <- melfcc(wav, numcep = 13)
+  # I solve the problem given by the fact that the audio files do not all     have the same time length by adding zeros to the matrix to force them     to have the same size
+  mfcc99 <- matrix(rep(0, time*ncep), ncol = 13)
+  mfcc99[1:dim(mfcc)[1],] <- mfcc
+
+  
+ # Add MFCC to MFCCs
+  
+mfccs <- abind(mfccs, mfcc99, along = 3)
+}
+mfccs[is.nan(mfccs)]<-0
+string <- paste(dir,"P.RData")
+save(mfccs, file = "yesP.RData")
+}
+
+```
