@@ -107,7 +107,7 @@ As we can see, the covariance matrix in this case will be the vectorization of a
 
 We act the same way with all the other classes. For memory reasons we decide not to save all labeled data in one tensor but save the preprocessed data separately and add labels when the classification process starts.
 
-to this end we need only update the previous code with a for loop to perform the operation on all folders
+to this end we need only update the previous code with a for loop to perform the operation on all folders 
 
 ```{r}
 #library(abind)
