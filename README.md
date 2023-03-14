@@ -17,6 +17,7 @@ for (file in file_list) {
   mfccs<- mfccs[-99,,]
   save(mfccs, file = gsub(" ", "", file))
 }
-```<br>
+```
+
 Step 2<br>
 Classification of the words "dog" and "cat" with QDA and LDA with MLE covariance estimation <br>
