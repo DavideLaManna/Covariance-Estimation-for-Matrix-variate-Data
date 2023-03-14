@@ -1,0 +1,125 @@
+---
+title: "A first attemp with LDA and QDA"
+author: "Davide la Manna"
+date: "2023-03-14"
+output:
+    html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "C:/Users/david/OneDrive/Desktop/semester project/git/SemesterProject/speech_commands_v0.02.tar/preprocessed data")
+library(MASS)
+library(caret)
+library(reshape2)
+library(ggplot2)
+```
+# Introduction
+As a first attempt at classification, we try the LDA and QDA classification algorithm for the words "dog" and "cat" (thus a two-class classification) to get an initial idea of which method best fits the variability of our data.
+
+# loading of the data
+
+first we load the data and transform them into matrices of size 13*98 x N_obs
+
+```{r}
+# loading of the data dog
+load("dogP.RData")
+# Array transform
+nrow <- dim(mfccs)[3]
+ncol <- dim(mfccs)[1] * dim(mfccs)[2]
+mfccs_t <- array(data = NA, dim = c(nrow, ncol))
+for (i in 1:nrow) {
+  mfccs_t[i,] <- c(mfccs[,,i])
+}
+
+# partition in train and test set with a rate of 1:10 for the test set
+index <- sample(1:nrow, size = nrow, replace = FALSE)
+train_index <- index[1:(0.9*nrow)]
+test_index <- index[(0.9*nrow+1):nrow]
+train_dog <- mfccs_t[train_index,]
+test_dog <- mfccs_t[test_index,]
+
+#repeat for cat
+load("catP.RData")
+# Array transform
+nrow <- dim(mfccs)[3]
+ncol <- dim(mfccs)[1] * dim(mfccs)[2]
+mfccs_t <- array(data = NA, dim = c(nrow, ncol))
+for (i in 1:nrow) {
+  mfccs_t[i,] <- c(mfccs[,,i])
+}
+
+# partition in train and test set with a rate of 1:10 for the test set
+index <- sample(1:nrow, size = nrow, replace = FALSE)
+train_index <- index[1:(0.9*nrow)]
+test_index <- index[(0.9*nrow+1):nrow]
+train_cat <- mfccs_t[train_index,]
+test_cat <- mfccs_t[test_index,]
+```
+
+# QDA and LDA analysis
+
+At this point we are ready for classification by QDA and LDA. To visualize the results obtained we will create a scatter matrix and finally calculate the accuracy by calculating the diagonal of the scatter matrix.
+
+```{r}
+x <- rbind(train_dog, train_cat)
+y <- factor(c(rep("A", each = dim(train_dog)[1]),rep("B", each = dim(train_cat)[1])))
+qda.fit <- qda(x, y )
+lda.fit <- lda(x, y )
+```
+Let us now look at how our models predict new data.
+
+```{r}
+qda.pre<-predict(qda.fit, rbind(test_dog, test_cat))
+lda.pre<-predict(lda.fit, rbind(test_dog, test_cat))
+
+
+# Create the confusion matrix
+true_labels <- factor(c(rep("A", each = dim(test_dog)[1]),rep("B", each = dim(test_cat)[1])))
+Cmq=confusionMatrix(qda.pre$class, true_labels)
+Cml=confusionMatrix(lda.pre$class, true_labels)
+
+```
+Let us examine the accuracy of these methods by the diagonal of the confusion matrices
+
+```{r}
+accuracy1 <- sum(diag(Cmq$table)) / length(true_labels)
+accuracy2 <- sum(diag(Cml$table)) / length(true_labels)
+cat("Accuracy MLE method:", accuracy1 * 100, "%\n")
+cat("Accuracy MLE method:", accuracy2 * 100, "%\n")
+```
+
+
+```{r}
+# Plot the confusion matrix for qda
+cm_melted <- melt(as.matrix(Cmq))
+colnames(cm_melted) <- c("True", "Predicted", "value")
+ggplot(data = cm_melted, aes(x = True, y = Predicted, fill = value)) +
+  geom_tile() +
+  geom_text(aes(label = value), color = "black", size = 4) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  theme_minimal() +
+  theme(text = element_text(size = 14), axis.title = element_blank()) +
+  labs(title = "confusion matrix")
+```
+
+```{r}
+# Plot the confusion matrix for lda
+
+cm_melted <- melt(as.matrix(Cml))
+colnames(cm_melted) <- c("True", "Predicted", "value")
+ggplot(data = cm_melted, aes(x = True, y = Predicted, fill = value)) +
+  geom_tile() +
+  geom_text(aes(label = value), color = "black", size = 4) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  theme_minimal() +
+  theme(text = element_text(size = 14), axis.title = element_blank()) +
+  labs(title = "confusion matrix")
+```
+
+# Conclusion
+
+As we could see from the confusion matrix and accuracy, the LDA method allows for more accurate prediction of new data at least in the two-class case.
+QDA overperforms in one class but does not allow optimal prediction in the second class. So at least in the case of two classes we decide to use linear discriminant analysis.
+The next step will be to repeat the experiment with more classes and use new methods to estimate the covariance matrix. 

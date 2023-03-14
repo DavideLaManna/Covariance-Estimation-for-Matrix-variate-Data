@@ -1,12 +1,14 @@
 ---
 title: "Preprocessing"
 author: "Davide la Manna"
-date: '2023-03-13'
-output: html_document
+date: "2023-03-13"
+output:
+    html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "C:/Users/david/OneDrive/Desktop/semester project/git/SemesterProject/speech_commands_v0.02.tar/speech_commands_v0.02")
 ```
 
 # uploading .wav data
@@ -15,17 +17,16 @@ To begin with, we will upload a random .wav file representing a "yes".
 
 ```{r}
 library(tuneR)
-setwd("C:/Users/david/OneDrive/Desktop/semester project/git/SemesterProject/speech_commands_v0.02.tar/speech_commands_v0.02/yes")
-file_list <- list.files()  
+file_list <- list.files("yes")  
 random_file <- sample(file_list, 1) 
-audio <- readWave(random_file)
+audio <- readWave(file.path("yes",random_file))
 ```
 
 let's try to display and reproduce the following file
 
-```{r plot}
+```{r}
 plot(audio)
-play(audio)
+#play(audio)
 ```
 
 # investigate the class "yes"
@@ -46,7 +47,7 @@ for (file in file_list) {
   
   # compute the MFCC
   mfcc <- melfcc(wav, numcep = 13)
-  # I solve the problem given by the fact that the audio files do not all     have the same time length by adding zeros to the matrix to force them     to have the same size
+  # I solve the problem given by the fact that the audio files do not all have the same time length by adding zeros to the matrix to force them to have the same size
   mfcc99 <- matrix(rep(0, time*ncep), ncol = 13)
   mfcc99[1:dim(mfcc)[1],] <- mfcc
 
@@ -57,13 +58,13 @@ mfccs <- abind(mfccs, mfcc99, along = 3)
 }
 ```
 
-It appears from the analysis that there are approximately 20000 nan values
+It appears from the analysis that there are 21723 NA values
 
 ```{r}
 summary(mfccs)
 ```
 
-since it represents a considerably small value compared to `ncep`\*`time`\*`nfile`, we decide for the moment to replace these nan values with zeros (hoping that our analysis is still good)
+since it represents a considerably small value compared to `ncep` \* `time`\*`nfile`, we decide for the moment to replace these NA values with zeros (hoping that our analysis is still good)
 
 ```{r}
 mfccs[is.nan(mfccs)]<-0
@@ -83,11 +84,11 @@ mean <- apply(mfccs, c(1,2), mean)
 
 this command calculates the average along the third dimension returning us a matrix of size `ncep`\*`time` that we plot
 
-```{r plot}
+```{r}
 image(t(mean),xlab = "mfcc", ylab = "Time")
 ```
 
-for the correlation we decide to transform the array into a matrix of dimension `ncep`\*`time` $\times$ `nfile` and calculate the correlation, obtaining a but matrix of dimension `ncep`\*`time` $\times$`ncep`\*`time` which we plot
+for the correlation we decide to transform the array into a matrix of dimension `ncep` $\times$ `time` $\times$ `nfile` and calculate the correlation, obtaining a but matrix of dimension `ncep`\*`time` $\times$`ncep`\*`time` which we plot
 
 ```{r}
 vectorized = matrix(mfccs, ncol = ncep*time, byrow = TRUE)
@@ -96,47 +97,57 @@ corr=cor(vectorized)
 
 As can also be seen from the graph, some correlation values are outliers, creating white lines in the graph. This phenomenon is probably related to the presence of zero values in the data array.
 
-```{r plot}
+```{r}
 image(corr)
 ```
+
+As we can see, the covariance matrix in this case will be the vectorization of a tensor of size (13,99,13,99), thus a matrix of size 1287 × 1287, we can see how this matrix consists of 13 x 13 blocks of square matrices of size 99. For example, the matrix on the lower left is the sample covariance matrix for the first cepstral coefficient across the 99 time points.
 
 # Preprocess all the data
 
 We act the same way with all the other classes. For memory reasons we decide not to save all labeled data in one tensor but save the preprocessed data separately and add labels when the classification process starts.
 
 to this end we need only update the previous code with a for loop to perform the operation on all folders
+
 ```{r}
-library(abind)
-ncep=13 #number of cepstral coefficients required
-time=99 #number of time intervals
-path="C:/Users/david/OneDrive/Desktop/semester project/git/SemesterProject/speech_commands_v0.02.tar/speech_commands_v0.02"
-setwd(path)
-
-list_dirs=list.dirs()
-for (dir in list_dirs) {
-    file_list <- list.files(dir)  
-nfile=length(file_list)
-mfccs <- NULL
-
-# Loop through all the .wav files in the "yes" folder.
-for (file in file_list) {
-    # load file .wav
-  wav <- readWave(file.path(path,dir, file))
-  
-  # compute the MFCC
-  mfcc <- melfcc(wav, numcep = 13)
-  # I solve the problem given by the fact that the audio files do not all     have the same time length by adding zeros to the matrix to force them     to have the same size
-  mfcc99 <- matrix(rep(0, time*ncep), ncol = 13)
-  mfcc99[1:dim(mfcc)[1],] <- mfcc
-
-  
- # Add MFCC to MFCCs
-  
-mfccs <- abind(mfccs, mfcc99, along = 3)
-}
-mfccs[is.nan(mfccs)]<-0
-string <- paste(dir,"P.RData")
-save(mfccs, file = "yesP.RData")
-}
-
+#library(abind)
+#ncep=13 #number of cepstral coefficients required
+#time=99 #number of time intervals
+#
+#
+#list_dirs=list.dirs()
+#list_dirs<-list_dirs[-1] #omit the empty dir
+#for (dir in list_dirs) {
+#    file_list <- list.files(dir)  
+#nfile=length(file_list)
+#mfccs <- NULL
+#
+## Loop through all the .wav files in the "yes" folder.
+#for (file in file_list) {
+#    # load file .wav
+#  wav <- readWave(file.path(dir, file))
+#  
+#  # compute the MFCC
+#  mfcc <- melfcc(wav, numcep = 13)
+#  # I solve the problem given by the fact that the audio files do not all     have #the same time length by adding zeros to the matrix to force them     to have the #same size
+#  mfcc99 <- matrix(rep(0, time*ncep), ncol = 13)
+#  mfcc99[1:dim(mfcc)[1],] <- mfcc
+#
+#  
+# # Add MFCC to MFCCs
+#  
+#mfccs <- abind(mfccs, mfcc99, along = 3)
+#}
+#mfccs[is.nan(mfccs)]<-0
+#string <- paste(dir,"P.RData")
+#new_str <- sub("./", "", string) 
+#save(mfccs, file = new_str)
+#}
+#
 ```
+
+The output of this file will be provided on github
+
+# Conclusion
+
+We were able to observe graphically that the mean and covariance matrices found are very similar to those found in the work of HOFF et al. so we are very satisfied with our analysis, although the presence of audios of different lengths forced us to fill in arbitrary values for the time values of the cepstral coefficients in some cases (which is also evident from the covariance matrix). One way to achieve better data preprocessing might be to force the audios to be the same length or to force the choice of 99 framerates within the command `melfc` Hoping that this will not adversely affect the selection of cepstral coefficients for the purpose of classification.
