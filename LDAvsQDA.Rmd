@@ -4,9 +4,10 @@ author: "Davide la Manna"
 date: "2023-03-14"
 output:
     html_document:
-    toc: true
+      toc: true
+      theme: united
 ---
-
+-------------
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = "C:/Users/david/OneDrive/Desktop/semester project/git/SemesterProject/speech_commands_v0.02.tar/preprocessed data")
@@ -15,12 +16,14 @@ library(caret)
 library(reshape2)
 library(ggplot2)
 ```
-# Introduction
+
+## Introduction
+
 As a first attempt at classification, we try the LDA and QDA classification algorithm for the words "dog" and "cat" (thus a two-class classification) to get an initial idea of which method best fits the variability of our data.
 
-# loading of the data
+## loading of the data
 
-first we load the data and transform them into matrices of size 13*98 x N_obs
+first we load the data and transform them into matrices of size 13\*98 x N_obs
 
 ```{r}
 # loading of the data dog
@@ -58,7 +61,7 @@ train_cat <- mfccs_t[train_index,]
 test_cat <- mfccs_t[test_index,]
 ```
 
-# QDA and LDA analysis
+##  QDA and LDA analysis
 
 At this point we are ready for classification by QDA and LDA. To visualize the results obtained we will create a scatter matrix and finally calculate the accuracy by calculating the diagonal of the scatter matrix.
 
@@ -68,6 +71,7 @@ y <- factor(c(rep("A", each = dim(train_dog)[1]),rep("B", each = dim(train_cat)[
 qda.fit <- qda(x, y )
 lda.fit <- lda(x, y )
 ```
+
 Let us now look at how our models predict new data.
 
 ```{r}
@@ -81,6 +85,7 @@ Cmq=confusionMatrix(qda.pre$class, true_labels)
 Cml=confusionMatrix(lda.pre$class, true_labels)
 
 ```
+
 Let us examine the accuracy of these methods by the diagonal of the confusion matrices
 
 ```{r}
@@ -89,7 +94,6 @@ accuracy2 <- sum(diag(Cml$table)) / length(true_labels)
 cat("Accuracy MLE method:", accuracy1 * 100, "%\n")
 cat("Accuracy MLE method:", accuracy2 * 100, "%\n")
 ```
-
 
 ```{r}
 # Plot the confusion matrix for qda
@@ -118,8 +122,6 @@ ggplot(data = cm_melted, aes(x = True, y = Predicted, fill = value)) +
   labs(title = "confusion matrix")
 ```
 
-# Conclusion
+## Conclusion
 
-As we could see from the confusion matrix and accuracy, the LDA method allows for more accurate prediction of new data at least in the two-class case.
-QDA overperforms in one class but does not allow optimal prediction in the second class. So at least in the case of two classes we decide to use linear discriminant analysis.
-The next step will be to repeat the experiment with more classes and use new methods to estimate the covariance matrix. 
+As we could see from the confusion matrix and accuracy, the LDA method allows for more accurate prediction of new data at least in the two-class case. QDA overperforms in one class but does not allow optimal prediction in the second class. So at least in the case of two classes we decide to use linear discriminant analysis. The next step will be to repeat the experiment with more classes and use new methods to estimate the covariance matrix.
