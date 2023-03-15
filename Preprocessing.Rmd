@@ -3,8 +3,15 @@ title: "Preprocessing"
 author: "Davide la Manna"
 date: "2023-03-13"
 output:
-    html_document: default
+    html_document:
+      toc: true
+      theme: united
 ---
+
+Header 1
+---------------
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+    
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -139,7 +146,7 @@ to this end we need only update the previous code with a for loop to perform the
 #mfccs <- abind(mfccs, mfcc99, along = 3)
 #}
 #mfccs[is.nan(mfccs)]<-0
-#string <- paste(dir,"P.RData")
+#string <- paste0(dir,"P.RData")
 #new_str <- sub("./", "", string) 
 #save(mfccs, file = new_str)
 #}
