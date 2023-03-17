@@ -3,13 +3,13 @@
 
 # Covariance Estimation for Matrix-variate Data
 
-Week 1<br>
+## Week 1<br>
 Workflow setup on github<br>
 
-week 2<br>
+## week 2<br>
 Review of chapters 3 and 4 by Murphy (2012) and general reading of the papers provided on covariance estimation methods<br>
 
-week 3<br>
+## week 3<br>
 Preprocessing the data<br>
 the entire preprocessed data set can be found [here](https://drive.google.com/file/d/1fgwxos-W09WDOus4223DKIhLCvJItQsz/view?usp=share_link)
 
@@ -27,7 +27,7 @@ for (file in file_list) {
 
 Classification of the words "dog" and "cat" with QDA and LDA with MLE covariance estimation <br>
 
-Week 4<br>
+## Week 4<br>
 Fixed the data preprocessing algorithm, which now only contains files of 1 minute duration and does not contain arrays with NA elements. T=98 appears to be the number of framerates per 1 second file and not 99, using a proper function ('compute_mfccs.R') to load the data and preprocess it.<br>
 
 
