@@ -1,6 +1,6 @@
 
 # Define the indicator function
-indicator <- function(x, u0, u1, C,w) {
+indicator <- function(x, u0, u1,w) {
 
   
   # Calculate the dot product between (x - u0, w) and (x - u1, w)

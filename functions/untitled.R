@@ -4,8 +4,9 @@ library(reshape2)
 library(ggplot2)
 library(MASS)
 
+
 source("C:/Users/david/OneDrive/Desktop/semester project/git/SemesterProject/functions/indicator.R")
-source("C:/Users/david/OneDrive/Desktop/semester project/git/SemesterProject/functions/matrix.R")
+source("C:/Users/david/OneDrive/Desktop/semester project/git/SemesterProject/functions/matrix1.R")
 # loading of the data dog
 load("dogP.RData")
 # Array transform
@@ -41,22 +42,29 @@ train_cat <- mfccs_t[train_index,]
 test_cat <- mfccs_t[test_index,]
 
 
+
+
+
+
 #preparation of the data
 x <- rbind(train_dog, train_cat)
 y <- factor(c(rep(0, each = dim(train_dog)[1]),rep(1, each = dim(train_cat)[1])))
 
-#MLE estimation
-mean_dog <- colMeans(train_dog)
-cov <- cov(x)
-mean_cat <- colMeans(train_cat)
 
 
-#LDA by hand
-x_new <- rbind(test_dog, test_cat)
-y_new <- factor(c(rep(0, each = dim(test_dog)[1]),rep(1, each = dim(test_cat)[1])))
-vec<-matrix1(x_new,mean_dog,mean_cat,cov)
-accuracy <- sum(y_new == vec)/length(vec)
-vec <- factor(vec, levels = unique(c(0,1)))
+
+##MLE estimation
+#mean_dog <- colMeans(train_dog)
+#cov <- cov(x)
+#mean_cat <- colMeans(train_cat)
+
+
+##LDA by hand
+#x_new <- rbind(test_dog, test_cat)
+#y_new <- factor(c(rep(0, each = dim(test_dog)[1]),rep(1, each = dim(test_cat)[1])))
+#vec<-matrix1(x_new,mean_dog,mean_cat,cov)
+#accuracy <- sum(y_new == vec)/length(vec)
+#vec <- factor(vec, levels = unique(c(0,1)))
 
 #LDA
 qda.fit <- lda(x, y)
