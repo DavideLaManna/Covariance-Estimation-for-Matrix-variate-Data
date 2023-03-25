@@ -1,0 +1,122 @@
+---
+title: "Data Exploration"
+output:
+  html_document:
+    toc: true
+header-includes:
+  - \usepackage{bm}
+  - \newcommand{\E}{\mathbb{E}}
+  - \newcommand{\var}{\mathrm{var}}
+  - \newcommand{\R}{\mathbb{R}}
+  - \newcommand{\argmin}{\mathrm{arg\,min\;}}
+  - \newcommand{\rank}{\mathrm{rank}}
+  - \newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
+library(tidyverse)
+library(lattice)
+
+tensor2matrix <- function(C){
+# transforms a covariance tensor into the proper covariance matrix
+  K1 <- dim(C)[1]
+  K2 <- dim(C)[2]
+  C_mat <- matrix(c(C),ncol=K1*K2)
+  return(C_mat)
+}
+
+matrix2tensor <- function(C_mat,K1,K2){
+# transforms a covariance matrix into the proper covariance tensor, dimensions must be provided
+  C <- array(c(C_mat),c(K1,K2,K1,K2))
+  return(C)
+}
+
+LDA <- function(mu0,mu1,Xnew,psi){
+  a <- sum( (Xnew-mu0)*psi )^2
+  b <- sum( (Xnew-mu1)*psi )^2
+  return( I(a > b) )
+}
+
+confusion_matrix <- function(truth, estim){
+  M <- array(0,c(2,2))
+  M[1,2] <- sum(truth*I(truth==estim))
+  M[2,1] <- sum((1-truth)*I(truth==estim))
+  M[1,1] <- sum(truth > estim)
+  M[2,2] <- sum(truth < estim)
+  myPanel <- function(x,y,z, ...){
+    panel.levelplot(x,y,z,...) 
+    panel.text(x,y, M, col="black")
+  }
+  levelplot(M, panel= myPanel, xlab="truth", ylab="prediction",
+            scales=list(x=list(labels=c("","1","","0","")),y=list(labels=c("","0","","1",""))))
+}
+```
+
+## MFCC surfaces
+
+MFCCs are calculated as described [here](https://en.wikipedia.org/wiki/Mel-frequency_cepstrum). In step 1, the audio time serie is cut into windows of a certain length and the Fourier transform (and the subsequent steps) are taken for every window separately.
+
+@Davide: In your preprocessing, when calling tuneR::melfcc, you do not provide the function with the desired temporal resolution, a.k.a. the number of windows to cut the signal into. The function resorts to default parameters `hoptime=0.01` and `wintime=0.025`. There are two parameters, since the windows can be overlapping. With the default, the function takes a window of length 0.025 sec and takes the Fourier transform (and the subsequent steps) of this window before jumping forward by 0.1 to start the next window calculations. This way, when it jumps to time 0.99 seconds, the last window escapes the signal length and thus is skipped. Simply change `wintime=0.01`, leading to no overlap between the windows, this will result in 99 time points and this is what is used in the paper anyway.
+
+I have now my data stored as a list of arrays (one array for every word) called `MFCCs.RData`.
+
+## Classying "right" vs. "left"
+
+```{r}
+load("../Tomas/MFCCs.RData")
+Ones <- Data$right 
+Zers <- Data$left  
+K1 <- dim(Ones)[2] # temporal resolution
+K2 <- dim(Ones)[3] # frequency resolution
+dimnames(Ones) <- NULL
+dimnames(Zers) <- NULL
+true_class <- as.logical(c(rep(1,dim(Ones)[1]),rep(0,dim(Zers)[1])))
+Data <- array(0,c(length(true_class),K1,K2))
+Data[1:dim(Ones)[1],,] <- Ones
+Data[(1+dim(Ones)[1]):dim(Data)[1],,] <- Zers
+### single cross-validation step for 5 folds, i.e. test-set comparison
+foldno <- 5
+set.seed(517)
+perm <- sample(1:length(true_class))
+Folds <- matrix(perm[1:length(true_class)],ncol=5)
+Dat_test <- Data[Folds[,foldno],,]
+Dat_train <- Data[-Folds[,foldno],,]
+class_train <- true_class[-Folds[,foldno]]
+class_test <- true_class[Folds[,foldno]]
+# fit the means
+mu0 <- apply(Dat_train[!class_train,,],c(2,3),mean)
+mu1 <- apply(Dat_train[class_train,,],c(2,3),mean)
+Dat_train[!class_train,,] <- sweep(Dat_train[!class_train,,], c(2,3), mu0)
+Dat_train[class_train,,] <- sweep(Dat_train[class_train,,], c(2,3), mu1)
+# fit the empirical covariance
+N <- dim(Dat_train)[1]
+C <- array(0,c(K1,K2,K1,K2))
+for(n in 1:N){
+  C <- C + outer(Dat_train[n,,],Dat_train[n,,])
+}
+C <- C/N
+# find psi
+C_mat <- tensor2matrix(C)
+psi <- solve(C_mat,c(mu1-mu0))
+psi <- matrix(psi,ncol=13)
+# perform classifiction of test data
+class_hat <- rep(NA,length(class_test))
+for(j in 1:length(class_hat)){
+  class_hat[j] <- LDA(mu0,mu1,Dat_test[j,,],psi)
+}
+# output measures
+(length(class_test) - sum(abs(class_test-class_hat)))/length(class_test) # Accuracy
+confusion_matrix(class_test,class_hat)
+```
+
+
+
+
+
+
+
+
+
+
+
