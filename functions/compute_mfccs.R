@@ -9,7 +9,7 @@ compute_mfccs <- function(dir,ncep) {
     wav <- readWave(file.path(dir, file))
     if(length(wav@left) == 16000){ 
       # compute the MFCC
-      mfcc <- melfcc(wav, numcep = ncep)
+      mfcc <- melfcc(wav, numcep = ncep,wintime=0.01)
       #Check that the mfcc not have NA value
       if(!any(is.na(mfcc))) {
         mfccs <- abind(mfccs, mfcc, along = 3)
