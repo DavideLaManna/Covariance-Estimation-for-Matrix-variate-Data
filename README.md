@@ -30,6 +30,10 @@ Classification of the words "dog" and "cat" with QDA and LDA with MLE covariance
 ## Week 4<br>
 Fixed the data preprocessing algorithm, which now only contains files of 1 minute duration and does not contain arrays with NA elements. T=98 appears to be the number of framerates per 1 second file and not 99, using a proper function ('compute_mfccs.R') to load the data and preprocess it.<br>
 
+## Week 5<br>
+set wintime=0.01 in compute_mfccs to obtain a right time partition. <br>
+created from scratch algorithm for LDA classification using an inverse problem to not compute the inverse of the covariance matrix.<br>
+
 
 ## References
 
