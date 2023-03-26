@@ -33,7 +33,7 @@ Fixed the data preprocessing algorithm, which now only contains files of 1 minut
 ## Week 5<br>
 set wintime=0.01 in compute_mfccs to obtain a right time partition. <br>
 created from scratch algorithm for LDA classification using an inverse problem to not compute the inverse of the covariance matrix.<br>
-
+Compute the same LDA classifier for classes of arbitrary amplitude <br>
 
 ## References
 
