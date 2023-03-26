@@ -7,7 +7,9 @@ my_lda <- function(M, u,w) {
   # Create an empty vector to store the indicator values
   indicator_values <- vector("numeric", k)
   
-  # Calculate the indicator for each row in M
+  # Calculate the label for each row in M
+  # the label function calculates the sum of k for the set indicator 
+  # "s_j(M[i,,])z>s_l(M[i,,] \forall l\neq j \in \{1,...,k\}"
   for (i in 1:k) {
     label<-0
     for(j in 1:h){
@@ -30,7 +32,7 @@ my_lda <- function(M, u,w) {
 indicator <- function(x, u1, u2,w1,w2) {
   
   
-  # Calculate the dot product
+  # Calculate the difference of two score
   dot_product <- sum(u1* w1) -2*sum(x * w1) -sum(u2*w2)+2*sum(x * w2) 
   
   # Calculate the indicator value
