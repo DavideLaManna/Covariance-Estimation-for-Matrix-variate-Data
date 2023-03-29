@@ -1,0 +1,194 @@
+---
+title: "A first attemp with LDA and QDA"
+author: "Davide la Manna"
+date: "2023-03-28"
+output:
+    html_document:
+      toc: true
+      theme: united
+---
+
+------------------------------------------------------------------------
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(abind)
+library(MASS)
+library(caret)
+library(ggplot2)
+library(reshape2)
+source("~/Desktop/semester project/SemesterProject/functions/LDA.R")
+source("~/Desktop/semester project/SemesterProject/functions/LDARightLeft.R")
+```
+
+## Introduction
+
+Our goal is to create from scratch a classifier that uses QDA or LDA as a classification method. We want to implement an algorithm that never directly calculates the inverse of the covariance matrix of our data because it might be a problem in relation to the nature of our data.
+
+## LDA Right/left
+
+As a first approach to our problem we create an "Ad Hoc" classifier that solves the problem in the case of only two classes, implementing the algorithm for LDA. For our purposes we use a set of functions within the script `2classLDA.R`. In this script we implement an algorithm that essentially computes the indicator function $$\chi_{[<X-\mu_0,w>-<X-\mu_1,w>]}$$ It is not difficult to show that this is equivalent to showing that $$s_1(x)>s_0(x)$$ where $s_k(x)$ is the score function and it's defined as $$s_k(x)=(x-\mu_k)^TC^{-1}(x-\mu_k).$$ As mentioned, we prefer the first formulation above since it does not involve the inverse of C , because the inverse may not exist. We upload the data,
+
+```{r}
+data<-get(load("~/Desktop/semester project/SemesterProject/MFCCs.RData"))
+```
+
+and we show the code of our first algorithm
+
+```{r}
+#prepare the data
+alpha<-0.8
+right<-partition(data$right,0.8)
+left<-partition(data$left,0.8)
+train_set<-abind(right$train,left$train,along=1)
+test_set<-abind(right$test,left$test,along=1)
+test_labels<-factor(c(rep(0,dim(right$test)[1]),rep(1,dim(left$test)[1])))
+
+#MLE of the data
+meanR<-apply(right$train, c(2,3), mean)
+meanL<-apply(left$train, c(2,3), mean)
+C=cov1(train_set)
+
+#solve inverse problem
+w<-matrix(nrow=dim(meanR)[1],ncol=dim(meanR)[2])
+for (i in 1:dim(meanR)[2]) {
+  w[,i]=solve(C[,i,,i],meanR[,i]-meanL[,i])
+}
+
+#predict the value
+predictions<-my_lda1(test_set,meanR,meanL,w)
+```
+
+At this point we are ready to show the results obtained.
+
+```{r echo=FALSE}
+# Plot the confusion matrix
+cm <- as.matrix(confusionMatrix(factor(predictions,level=c(0,1)), test_labels)$table)
+cm_melted <- melt(cm)
+colnames(cm_melted) <- c("True", "Predicted", "value")
+ggplot(data = cm_melted, aes(x = True, y = Predicted, fill = value)) +
+  geom_tile() +
+  geom_text(aes(label = value), color = "black", size = 4) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  scale_x_continuous(breaks = seq(0, 1, 1)) + 
+  scale_y_continuous(breaks = seq(0, 1, 1)) +
+  theme_minimal() +
+  theme(text = element_text(size = 14)) +
+  labs(title = "Confusion Matrix", x = "True", y = "Predicted")
+
+```
+
+As we can see, the result obtained is good with an accuracy of 
+`r sum(diag(confusionMatrix(factor(predictions,level=c(0,1)), test_labels)$table)) / length(test_labels)*100`%.
+
+## LDA
+We can generalize the problem. We create a function that takes as input data and an estimate of the covariance matrix and calculates the LDA (or similarly the QDA) of the data provided. This can be done simply by showing that the relationship $$s_i(x)>s_j(x)$$ can be rewritten as follows: 
+$$u_i\cdot w_i -2(x\cdot w_i) >  u_j\cdot w_j  -2(x\cdot w_j) $$
+where
+$\mu_i$ is the maximum likelihood estimate of the mean class of the class $i$ and $w_i$ solves the inverse problem 
+$$Cw_i=\mu_i.$$
+this condition can easily be modified for a QDA simply by calculating the estimated covariance matrix of the class i.
+
+We apply the results obtained for the LDA
+to speech recognition of words “yes”, “no”, “up”, “down”, “left”, “right”, “on”, “off”, “stop”, “go”.
+
+```{r echo=FALSE}
+#prepare the data
+alpha<-0.8
+i<-1
+train_set<-NULL
+test_set<-NULL
+train_labels<-NULL
+test_labels<-NULL
+attr <- (attributes(data))$names
+mean<- array(NA, dim=c(dim(data$yes)[2], dim(data$yes)[3], length(attr)))
+classcov<- array(NA, dim=c(dim(data$yes)[2], dim(data$yes)[3],dim(data$yes)[2], dim(data$yes)[3], length(attr)))
+for (name in attr) {
+  val<-partition(data[[name]],alpha)
+  train_set<-abind(train_set,val$train,along=1)
+  test_set<-abind(test_set,val$test,along=1)
+  train_labels<-factor(c(train_labels,rep(i,dim(val$train)[1])),level=c(1:10)) #actually it doesn't need
+  test_labels<-factor(c(test_labels,rep(i,dim(val$test)[1])),level=c(1:10))
+  mean[,,i]<-apply(val$train, c(2,3), mean)
+  classcov[,,,,i]=cov1(val$train) #this is necessary for QDA
+  i<-i+1
+  
+}
+
+#MLE of the data
+C=cov1(train_set)
+
+#solve inverse problem for LDA
+w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
+for (i in 1:dim(mean)[2]) {
+  for(j in 1:dim(mean)[3])
+    w[,i,j]=solve(C[,i,,i],mean[,i,j])
+}
+
+#predict the value
+predictions<-my_lda(test_set,mean,w)
+
+
+# Plot the confusion matrix
+cm <- as.matrix(confusionMatrix(factor(predictions,level=c(1:10)), test_labels)$table)
+cm_melted <- melt(cm)
+colnames(cm_melted) <- c("True", "Predicted", "value")
+ggplot(data = cm_melted, aes(x = True, y = Predicted, fill = value)) +
+  geom_tile() +
+  geom_text(aes(label = value), color = "black", size = 4) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  scale_x_discrete(labels = attr,limits=attr) + 
+  scale_y_discrete(labels = attr,limits=attr) +
+  theme_minimal() +
+  theme(text = element_text(size = 14)) +
+  labs(title = "Confusion Matrix LDA", x = "True", y = "Predicted")
+  
+```
+
+In this case the prediction is significantly decreased because of the larger number of classes. This time the accuracy is worth
+```{r echo=FALSE} 
+accuracy<-sum(diag(confusionMatrix(factor(predictions,level=c(1:10)), test_labels)$table)) / length(test_labels)
+cat("Accuracy:", accuracy * 100, "%\n")
+
+```
+
+## QDA
+The previous condition can easily be modified for a QDA simply by calculating the estimated covariance matrix of the class i $C_i$ and later solve $$C_i w_i=\mu_i.$$
+
+As before, we show the results obtained
+
+```{r echo=FALSE}
+#solve inverse problem for QDA
+w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
+for (i in 1:dim(mean)[2]) {
+  for(j in 1:dim(mean)[3])
+    w[,i,j]=solve(classcov[,i,,i,j],mean[,i,j])
+}
+
+#predict the value
+predictions<-my_lda(test_set,mean,w)
+
+
+# Plot the confusion matrix
+cm <- as.matrix(confusionMatrix(factor(predictions,level=c(1:10)), test_labels)$table)
+cm_melted <- melt(cm)
+colnames(cm_melted) <- c("True", "Predicted", "value")
+ggplot(data = cm_melted, aes(x = True, y = Predicted, fill = value)) +
+  geom_tile() +
+  geom_text(aes(label = value), color = "black", size = 4) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  scale_x_discrete(labels = attr,limits=attr) + 
+  scale_y_discrete(labels = attr,limits=attr) +
+  theme_minimal() +
+  theme(text = element_text(size = 14)) +
+  labs(title = "Confusion Matrix QDA", x = "True", y = "Predicted")
+```
+
+In this case the classification is slightly worse, the accuracy is worth 
+```{r echo=FALSE} 
+accuracy<-sum(diag(confusionMatrix(factor(predictions,level=c(1:10)), test_labels)$table)) / length(test_labels)
+cat("Accuracy:", accuracy * 100, "%\n")
+
+```
+## Conclusion
+We could see that QDA and LDA applied to maximum likelihood estimation of the covariance matrix does not provide a sufficiently high accuracy value to allow the use of such algorithms but that it is a good start in this direction. The next step will be to implement new algorithms to estimate the covariance matrix in a way that better fits the variability of our data to increase accuracy. A good starting point will be to implement the estimates introduced by Hoff et al.

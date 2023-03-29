@@ -1,6 +1,6 @@
 
 #load the necessary
-library(abind)
+library(abind) #for concatenate the data
 library(caret) #for confusion matrix
 library(reshape2) #for melt function
 source("./functions/LDA.R")
@@ -23,15 +23,15 @@ for (name in attr) {
   train_labels<-factor(c(train_labels,rep(i,dim(val$train)[1])),level=c(1:10)) #actually it doesn't need
   test_labels<-factor(c(test_labels,rep(i,dim(val$test)[1])),level=c(1:10))
   mean[,,i]<-apply(val$train, c(2,3), mean)
-  classcov[,,,,i]=cov3(val$train)
+  classcov[,,,,i]=cov1(val$train) #this is necessary for QDA
   i<-i+1
   
 }
 
 #MLE of the data
-C=cov3(train_set)
+C=cov1(train_set)
 
-#solve inverse problem
+#solve inverse problem for LDA
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
 for (i in 1:dim(mean)[2]) {
   for(j in 1:dim(mean)[3])
@@ -50,18 +50,18 @@ ggplot(data = cm_melted, aes(x = True, y = Predicted, fill = value)) +
   geom_tile() +
   geom_text(aes(label = value), color = "black", size = 4) +
   scale_fill_gradient(low = "white", high = "blue") +
-  scale_x_continuous(breaks = seq(1, 10, 1)) + 
-  scale_y_continuous(breaks = seq(1, 10, 1)) +
+  scale_x_discrete(labels = attr,limits=attr) + 
+  scale_y_discrete(labels = attr,limits=attr) +
   theme_minimal() +
   theme(text = element_text(size = 14)) +
-  labs(title = "Confusion Matrix", x = "True", y = "Predicted")
+  labs(title = "Confusion Matrix LDA", x = "True", y = "Predicted")
 
 # Calculate the accuracy of the algorithm
 accuracy <- sum(diag(confusionMatrix(factor(predictions,level=c(1:10)), test_labels)$table)) / length(test_labels)
 cat("Accuracy:", accuracy * 100, "%\n")
 
 
-#solve inverse problem
+#solve inverse problem for QDA
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
 for (i in 1:dim(mean)[2]) {
   for(j in 1:dim(mean)[3])
@@ -80,11 +80,11 @@ ggplot(data = cm_melted, aes(x = True, y = Predicted, fill = value)) +
   geom_tile() +
   geom_text(aes(label = value), color = "black", size = 4) +
   scale_fill_gradient(low = "white", high = "blue") +
-  scale_x_continuous(breaks = seq(1, 10, 1)) + 
-  scale_y_continuous(breaks = seq(1, 10, 1)) +
+  scale_x_discrete(labels = attr,limits=attr) + 
+  scale_y_discrete(labels = attr,limits=attr) +
   theme_minimal() +
   theme(text = element_text(size = 14)) +
-  labs(title = "Confusion Matrix", x = "True", y = "Predicted")
+  labs(title = "Confusion Matrix QDA", x = "True", y = "Predicted")
 
 # Calculate the accuracy of the algorithm
 accuracy <- sum(diag(confusionMatrix(factor(predictions,level=c(1:10)), test_labels)$table)) / length(test_labels)

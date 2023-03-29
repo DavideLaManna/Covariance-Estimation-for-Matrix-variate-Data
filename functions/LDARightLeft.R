@@ -1,5 +1,5 @@
 # Define the indicator_matrix function
-my_lda <- function(M, u0, u1,w) {
+my_lda1 <- function(M, u0, u1,w) {
   # Get the row of array
   k <- dim(M)[1]
   # Create an empty vector to store the indicator values
@@ -7,7 +7,7 @@ my_lda <- function(M, u0, u1,w) {
   
   # Calculate the indicator for each row in M
   for (i in 1:k) {
-    indicator_values[i] <- indicator(M[i,,], u0, u1, w)
+    indicator_values[i] <- indicator1(M[i,,], u0, u1, w)
   }
   
   return(indicator_values)
@@ -15,7 +15,7 @@ my_lda <- function(M, u0, u1,w) {
 
 
 # Define the indicator function
-indicator <- function(x, u0, u1,w) {
+indicator1 <- function(x, u0, u1,w) {
 
   
   # Calculate the dot product between (x - u0, w) and (x - u1, w)
@@ -50,13 +50,9 @@ cov1 <- function(M) {
   
   cov_mat <- array(0, dim = c(n2, n3, n2, n3))
   
-  for (i in 1:n2) {
+  for (i in 1:n3) {
     for (j in 1:n3) {
-      for (k in 1:n2) {
-        for (l in 1:n3) {
-          cov_mat[i, j, k, l] <- cov(M[, i, j], M[, k, l])
-        }
-      }
+      cov_mat[, i, , j] <- cov(M[,,i],M[,,j])
     }
   }
   
