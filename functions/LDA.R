@@ -74,3 +74,17 @@ cov1 <- function(M) {
   return(cov_mat)
 }
 
+
+#Calculation of the separable covariance matrix estimation for an array of 3 dimensions along the first dimension
+sepcov <- function(M) {
+  n2 <- dim(M)[2]
+  n3 <- dim(M)[3]
+  M1 <- apply(M, c(1, 3), mean)
+  M2 <- apply(M, c(1, 2), mean)
+  B <- cov(M1)
+  A <- cov(M2)
+  dim_sepcov <- c(dim(A)[1], dim(B)[1], dim(A)[2], dim(B)[2])
+  sepcov <- array(0, dim = dim_sepcov)
+  sepcov[] <- kronecker(A, B)
+  return(sepcov)
+}
