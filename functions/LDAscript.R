@@ -6,6 +6,10 @@ library(reshape2) #for melt function
 source("./functions/LDA.R")
 data<-get(load("./MFCCs.RData"))
 
+#parameters for sepcov
+tol=0.0000005
+maxrep=100
+
 #prepare the data
 alpha<-0.8
 i<-1
@@ -25,7 +29,7 @@ for (name in attr) {
   test_labels<-factor(c(test_labels,rep(i,dim(val$test)[1])),level=c(1:10))
   mean[,,i]<-apply(val$train, c(2,3), mean)
   classcov[,,,,i]=cov1(val$train) #this is necessary for QDA
-  classsepcov[,,,,i]=sepcov(val$train)
+  classsepcov[,,,,i]=sepcov(val$train,tol,maxrep)
   i<-i+1
   
 }
@@ -95,7 +99,7 @@ cat("Accuracy:", accuracy * 100, "%\n")
 
 
 #SEP MLE for the data
-C<-sepcov(train_set)
+C<-sepcov(train_set,tol,maxrep)
 
 #solve inverse problem for LDA in sep cov case
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))

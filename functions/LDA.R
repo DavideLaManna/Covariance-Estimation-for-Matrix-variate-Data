@@ -76,15 +76,78 @@ cov1 <- function(M) {
 
 
 #Calculation of the separable covariance matrix estimation for an array of 3 dimensions along the first dimension
-sepcov <- function(M) {
-  n2 <- dim(M)[2]
-  n3 <- dim(M)[3]
-  M1 <- apply(M, c(1, 3), mean)
-  M2 <- apply(M, c(1, 2), mean)
-  B <- cov(M1)
-  A <- cov(M2)
-  dim_sepcov <- c(dim(A)[1], dim(B)[1], dim(A)[2], dim(B)[2])
-  sepcov <- array(0, dim = dim_sepcov)
-  sepcov[] <- kronecker(A, B)
-  return(sepcov)
+sepcov <- function(M,tol,maxrep) {
+  
+  r <- dim(M)[1]
+  n <- dim(M)[3]
+  p <- dim(M)[2]
+
+#We evalutate the mean of the data  
+  mean <- apply(M, c(2,3), mean)
+  
+  step<-0
+#Initialization of initial condition  
+  V <- diag(p)
+  
+  # Let us define a matrix for the sum
+  somma <- 0
+  # We iterate from k = 1 to r
+  for (k in 1:r) {
+    diff <- M[k,,] - mean
+    W=solve(V, diff)
+    prodotto <- t(diff) %*% W
+    somma <- somma + prodotto
+  }
+  U <- (1 / (p * r)) * somma
+  
+# We repeat until convergence
+  repeat {
+    step<-step+1
+    somma <- 0
+    
+    for (k in 1:r) {
+      diff <- M[k,,] - mean
+      W<-solve(U, t(diff))
+      prodotto <- diff %*% W
+      somma <- somma + prodotto
+    }
+    V1 <- (1 / (n * r)) * somma
+    
+    somma <- 0
+    
+    for (k in 1:r) {
+      diff <- M[k,,] - mean
+      W=solve(V1, diff)
+      prodotto <- t(diff) %*% W
+      somma <- somma + prodotto
+    }
+    U1 <- (1 / (p * r)) * somma
+    
+    if (norm(U-U1)<tol | norm(V-V1)<tol | step>maxrep)
+    {
+      break
+    }
+    else 
+    {
+      U<-U1
+      V<-V1
+    }
+    
+  }
+  dim_C <- c(dim(V)[1], dim(U)[1], dim(V)[2], dim(U)[2])
+  
+  C <- array(0, dim = dim_C)
+  
+  # We evalutate the tensor of U and V by 4 level loop...
+  for (i in 1:dim(V)[1]) {
+    for (j in 1:dim(V)[2]) {
+      for (k in 1:dim(U)[1]) {
+        for (l in 1:dim(U)[2]) {
+          C[i, k, j, l] <- V[i, j] * U[k, l]
+        }
+      }
+    }
+  }
+return(C)
 }
+
