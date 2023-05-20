@@ -47,7 +47,7 @@ preparation of the mid-semester presentation
   <li>Implementation of separable covariance R algorithms for R=2 and 3 in LDA and QDA cases, comparing them with previous algorithms.</li>
   <li>Implementation of CSE algorithm and comparison with previous algorithms.</li>
   <li>Reading Lynch et. al's article on weak stability and Zatapa et. al's article on partial separability.</li>
-  <li>Homogenization class test. As expected, unsatisfactory results.</li>
+  <li>Homogenization class test. As expected, unsatisfactory results, what little is gained in the accuracy of the algorithm is lost by reducing the class size.</li>
   <li>Starting experiments on calculating the logarithm of the determinant of covariance matrix estimates in QDA. Error: infinite value. We decide to calculate the sum of the logarithms of the (positive) eigenvalues, which brings reasonable results.</li>
   <li>Implementation of a QDA algorithm that takes these values into account in the score.</li>
 </ul>
@@ -58,3 +58,6 @@ preparation of the mid-semester presentation
 -   Murphy (2012) Machine learning: a probabilistic perspective
 -   Masak, Sarkar & Panaretos (2022) Separable Expansions for Covariance Estimation via the Partial Inner Product
 -   Hoff, McCormack & Zhang (2022) Core Shrinkage Covariance Estimation for Matrix-variate Data
+-  Dutilleul (1999) The mle algorithm for the matrix normal distribution
+-  Lynch & Chen (2018) A test of weak separability for multi-way functional data, with application to brain connectivity studies
+-  Zapata, Oh & Petersen (2022) Partial Separability and Functional Graphical Models for Multivariate Gaussian Processes
