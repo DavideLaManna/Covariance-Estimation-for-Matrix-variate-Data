@@ -76,7 +76,7 @@ cov1 <- function(M) {
 
 
 #Calculation of the separable covariance matrix estimation for an array of 3 dimensions along the first dimension
-sepcov <- function(M,tol,maxrep) {
+sepcov <- function(M,maxrep) {
   
   r <- dim(M)[1]
   n <- dim(M)[3]
@@ -99,7 +99,7 @@ sepcov <- function(M,tol,maxrep) {
     somma <- somma + prodotto
   }
   U <- (1 / (p * r)) * somma
-  
+  U <- U/norm(U)
 # We repeat until convergence
   repeat {
     step<-step+1
@@ -112,7 +112,7 @@ sepcov <- function(M,tol,maxrep) {
       somma <- somma + prodotto
     }
     V1 <- (1 / (n * r)) * somma
-    
+    V1<- V1/norm(V1)
     somma <- 0
     
     for (k in 1:r) {
@@ -122,8 +122,8 @@ sepcov <- function(M,tol,maxrep) {
       somma <- somma + prodotto
     }
     U1 <- (1 / (p * r)) * somma
-    
-    if (norm(U-U1)<tol | norm(V-V1)<tol | step>maxrep)
+    U1<- U1/norm(U1)
+    if ( step>maxrep)
     {
       break
     }
@@ -150,4 +150,3 @@ sepcov <- function(M,tol,maxrep) {
   }
 return(C)
 }
-

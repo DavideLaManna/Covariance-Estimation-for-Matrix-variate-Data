@@ -42,6 +42,15 @@ Reading of Masak, Sarkar & Panaretos (2022) and Hoff, McCormack & Zhang (2022), 
 ## Week 7<br>
 preparation of the mid-semester presentation
 
+## Week 12<br>
+<ul>
+  <li>Implementation of separable covariance R algorithms for R=2 and 3 in LDA and QDA cases, comparing them with previous algorithms.</li>
+  <li>Implementation of CSE algorithm and comparison with previous algorithms.</li>
+  <li>Reading Lynch et. al's article on weak stability and Zatapa et. al's article on partial separability.</li>
+  <li>Homogenization class test. As expected, unsatisfactory results.</li>
+  <li>Starting experiments on calculating the logarithm of the determinant of covariance matrix estimates in QDA. Error: infinite value. We decide to calculate the sum of the logarithms of the (positive) eigenvalues, which brings reasonable results.</li>
+  <li>Implementation of a QDA algorithm that takes these values into account in the score.</li>
+</ul>
 
 
 ## References
