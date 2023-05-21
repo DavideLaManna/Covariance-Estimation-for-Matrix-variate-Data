@@ -36,7 +36,7 @@ for (name in attr) {
 
 #MLE of the data
 CMLE=cov1(train_set)
-CMLE<-cm2ca(ca2cm(CMLE)+sum(diag(ca2cm(CMLE)))/(dim(CMLE)[1]*dim(CMLE)[2])*diag(rep(1,1287)),99,13)
+CMLE<-cm2ca(0.5*ca2cm(CMLE)+0.5*sum(diag(ca2cm(CMLE)))/(dim(CMLE)[1]*dim(CMLE)[2])*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
