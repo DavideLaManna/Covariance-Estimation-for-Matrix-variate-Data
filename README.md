@@ -51,10 +51,10 @@ preparation of the mid-semester presentation
   <li>Homogenization class test. As expected, unsatisfactory results, what little is gained in the accuracy of the algorithm is lost by reducing the class size.</li>
   <li>Starting experiments on calculating the logarithm of the determinant of covariance matrix estimates in QDA. Error: infinite value. We decide to calculate the sum of the logarithms of the value. </li>
   <li>Implementation of a QDA algorithm that takes these values into account in the score.  Unfortunately, in our case it doesn't seem to work. We notice from the graph that the eigenvalues always have values strictly greater than 1 and the weight of this value decides the classification. </li>
-<li>Experiment about partial pooling demostrate that the accuracy becomes greater the closer one gets to the full covariance matrix, suggesting that the LDA performs better with the used dataset </li>
-<li>Regularization attempt for all the methods. The regularization allows to obtain important percentage points on the accuracy.<li>
-<li>In light of the experiments done, we are convinced that the effectiveness of the PPE method in the paper by Hoff et. al is due to a closer approximation to the overall covariance matrix of the data, that the CSE estimate has a higher value than the normal separable MLE due to an effect due to regularization, and that an error is present in the paper in that we consider the MLE qualitatively higher than its sep MLE approximation so we consider an anomalous result its higher result in predicting the results<li>
-<li> Tests on execution time have revealed sep LSE very slow compared to other estimators<li>
+  <li>Experiment about partial pooling demostrate that the accuracy becomes greater the closer one gets to the full covariance matrix, suggesting that the LDA performs better with the used dataset </li>
+  <li>Regularization attempt for all the methods. The regularization allows to obtain important percentage points on the accuracy.</li>
+<li>In light of the experiments done, we are convinced that the effectiveness of the PPE method in the paper by Hoff et. al is due to a closer approximation to the overall covariance matrix of the data, that the CSE estimate has a higher value than the normal separable MLE due to an effect due to regularization, and that an error is present in the paper in that we consider the MLE qualitatively higher than its sep MLE approximation so we consider an anomalous result its higher result in predicting the results</li>
+<li> Tests on execution time have revealed sep LSE very slow compared to other estimators</li>
 </ul>
 
 
