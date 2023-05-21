@@ -6,23 +6,23 @@
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
 
 \f0\fs24 \cf0 LDA MSE\
-Accuracy: 45.73643 %\
+Accuracy: 45.73643 %.  With regularisation. Accuracy: 51.53548 %\
 LDA SepMSE\
-Accuracy: 34.13834 %\
+Accuracy: 34.13834 %.  With regularisation.  Accuracy: 39.7734 %\
 QDA MSE\
-Accuracy: 37.86524 %. \
+Accuracy: 37.86524 %.  With log value 37.95468%.  With regularisation.  Accuracy: 45.22958 %\
 QDA SepMSE\
-Accuracy: 23.83721 %\
+Accuracy: 23.83721 %   With log value 23.76267% \
 LDA CSE\
-Accuracy: 45.57245 %\
+Accuracy: 45.57245 %.   With regularisation. Accuracy: 51.55039 %\
 QDA CSE\
-Accuracy: 35.98688 %\
+Accuracy: 35.98688 %.   With log value 35.98688 %\
 LDA R=1 SepLSE\
-Accuracy: 11.41667 %\
+Accuracy: 11.41667 %.   With regularisation. Accuracy: 44.99106 %\
 LDA R=2 SepLSE\
-Accuracy: 12.47764 %\
+Accuracy: 12.47764 %.   With regularisation. Accuracy: 45.90042 %\
 LDA R=3 SepLSE\
-Accuracy: 29.3232 %.\
+Accuracy: 29.3232 %.     With regularisation. Accuracy: 49.67203 %\
 LDA R=5 SepLSE\
 Accuracy: 32.69231 %\
 LDA R=10 SepLSE\
@@ -40,5 +40,16 @@ Accuracy: 27.10197 %\
 QDA R=20 SepLSE\
 Accuracy: 31.99165 %\
 \
-#utilizzare lo stesso numero di dati non ha aiutato\
+#use the same length in class don\'92t work\
+#change the formula for QDA don\'92t work\
+\
+Value of LogD\
+v<-rep(0,dim(mean)[3])\
+for(i in 1:dim(mean)[3])\
+\{v[i]<-logD(CCMLE[,,,,i])\}\
+> print(v)\
+ [1] 3125.501 3016.878 3177.019 3094.169 3285.603 3215.548 3070.224 3126.419 3257.351\
+[10] 3112.030\
+\
+\
 }

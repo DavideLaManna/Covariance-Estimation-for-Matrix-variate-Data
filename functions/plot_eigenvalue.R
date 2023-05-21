@@ -8,11 +8,11 @@ library(ggplot2)
 # Funzione per generare il plot degli autovalori
 plotEigenvalues <- function(mat) {
   if(!is.matrix(mat)) {
-    mat=ca2cm(mat)
+    mat=tensor2matrix(mat)
   }
   
   # Calcolo degli autovalori
-  eigenvalues <- abs(eigen(mat)$values)
+  eigenvalues <- eigen(mat)$values
   # Ordinamento degli autovalori
   sortedEigenvalues <- sort(eigenvalues)
   

@@ -1,5 +1,38 @@
 ### separable component decomposition
 library(covKCD) 
+
+#The R code provided performs a Separable Component Decomposition and Maximum 
+#Likelihood Estimation for covariance tensor structures. These are common methods 
+#in multivariate analysis and are used for estimating the covariance structure 
+#of a tensor-valued random variable.
+
+#The main functions included in this code are:
+#scd_est: This function calculates the separable component decomposition of a
+#given tensor. For R=1, it calculates the least squares separable estimator. 
+#The function takes as input a tensor X, a positive integer R (the number of 
+#components), a maximum number of iterations (maxiter), and an optional initial 
+#estimate for the tensor B.
+#sep_MLE: This function calculates the separable maximum likelihood estimator.
+#Similar to scd_est, the function takes as input a tensor X, a maximum number of
+#iterations (maxiter), and an optional initial estimate for the tensor B.
+#T1 and T2: These functions calculate partial inner products with respect to the
+#first and second arguments, respectively, which are used in the main functions 
+#scd_est and sep_MLE.
+#scdR and sMLE: These are wrapper functions for scd_est and sep_MLE, respectively,
+#which perform the decomposition and return the estimated covariance tensor.
+#logD, sample_cov, tensor2matrix, matrix2tensor,mat_root, cCSE, and frobenius: 
+#These are utility functions used for the calculation and manipulation of tensors
+#and matrices.
+
+
+
+
+
+
+
+
+
+
 # calculates the separable component decomposition
 # for R=1, it calculates the least squares separable estimator
 scd_est <- function(X,R,maxiter=10,B=NULL){
@@ -131,6 +164,14 @@ mat_root <- function(X){
   V <- EIG$vectors
   lambda <- (lambda + abs(lambda))/2
   return(V %*% diag(sqrt(lambda)) %*% t(V))
+}
+
+
+logD <-function(mat){
+  if(!is.matrix(mat)) {
+    mat=ca2cm(mat)
+  }
+return(sum(log(abs(eigen(mat)$values))))
 }
 
 sample_cov <- function(X){
