@@ -16,6 +16,7 @@ In this brief report we will show the results of classification using LDA with a
 ```{r}
 library(abind) #for concatenate the data
 library(caret) #for confusion matrix
+library(reshape2) #for melt function
 source("~/Desktop/semester project/SemesterProject/functions/LDA.R")
 #load the data
 data<-get(load("./MFCCs.RData"))
