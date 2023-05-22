@@ -13,8 +13,6 @@ plotEigenvalues <- function(mat) {
   
   # Calcolo degli autovalori
   eigenvalues <- eigen(mat)$values
-  # Ordinamento degli autovalori
-  sortedEigenvalues <- sort(eigenvalues)
   
   # Creazione di un dataframe per il plot
   df <- data.frame(index = 1:length(sortedEigenvalues), value = sortedEigenvalues)

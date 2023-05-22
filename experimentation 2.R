@@ -36,7 +36,7 @@ for (name in attr) {
 
 #MLE of the data
 CMLE=cov1(train_set)
-CMLE<-cm2ca(0.5*ca2cm(CMLE)+0.5*sum(diag(ca2cm(CMLE)))/(dim(CMLE)[1]*dim(CMLE)[2])*diag(rep(1,1287)),99,13)
+CMLE<-cm2ca(0.99*ca2cm(CMLE)+0.01*sum(diag(ca2cm(CMLE)))/(dim(CMLE)[1]*dim(CMLE)[2])*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -139,7 +139,7 @@ cat("Accuracy:", accuracy * 100, "%\n")
 
 # check least squares separable estimator R=1
 CKLSE1<- scdR(train_set,1)
-CKLSE1<-cm2ca(ca2cm(CKLSE1)+sum(diag(ca2cm(CKLSE1)))/1287*diag(rep(1,1287)),99,13)
+CKLSE1<-cm2ca(0.01*ca2cm(CKLSE1)+0.99*sum(diag(ca2cm(CKLSE1)))/1287*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -235,15 +235,4 @@ ggplot(data = cm_melted, aes(x = True, y = Predicted, fill = value)) +
 # Calculate the accuracy of the algorithm
 accuracy <- sum(diag(confusionMatrix(factor(predictions,level=c(1:10)), test_labels)$table)) / length(test_labels)
 cat("Accuracy:", accuracy * 100, "%\n")
-
-
-
-
-
-
-
-
-
-
-
 

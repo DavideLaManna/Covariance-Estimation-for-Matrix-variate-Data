@@ -42,7 +42,7 @@ CMLE<-cm2ca(ca2cm(CMLE)+sum(diag(ca2cm(CMLE)))/(dim(CMLE)[1]*dim(CMLE)[2])*diag(
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
 for (i in 1:dim(mean)[2]) {
   for(j in 1:dim(mean)[3])
-    w[,i,j]=solve(CMLE[,i,,i],mean[,i,j])
+    w[,i,j]=solve(B[,i,,i],mean[,i,j])
   
 }
 
@@ -61,7 +61,7 @@ ggplot(data = cm_melted, aes(x = True, y = Predicted, fill = value)) +
   scale_y_discrete(labels = attr,limits=attr) +
   theme_minimal() +
   theme(text = element_text(size = 14)) +
-  labs(title = "Confusion Matrix LDA", x = "True", y = "Predicted")
+  labs(title = "Confusion Matrix diag LDA", x = "True", y = "Predicted")
 
 # Calculate the accuracy of the algorithm
 accuracy <- sum(diag(confusionMatrix(factor(predictions,level=c(1:10)), test_labels)$table)) / length(test_labels)
