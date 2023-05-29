@@ -57,8 +57,9 @@ preparation of the mid-semester presentation
 <li> Tests on execution time have revealed sep LSE very slow compared to other estimators</li>
 </ul>
 ## Week 13 <br>
-<li> We have show that a diagonal LDA perfrom better with data rather classic LDA</ul>
-<li> Simulation study</ul>
+<li> We have show that a diagonal LDA perfrom better with data rather classic LDA</li>
+<li> Simulation study</li>
+</ul>
 
 
 ## References
