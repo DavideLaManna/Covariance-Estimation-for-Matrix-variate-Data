@@ -56,8 +56,10 @@ preparation of the mid-semester presentation
 <li>In light of the experiments done, we are convinced that the effectiveness of the PPE method in the paper by Hoff et. al is due to a closer approximation to the overall covariance matrix of the data, that the CSE estimate has a higher value than the normal separable MLE due to an effect due to regularization, and that an error is present in the paper in that we consider the MLE qualitatively higher than its sep MLE approximation so we consider an anomalous result its higher result in predicting the results</li>
 <li> Tests on execution time have revealed sep LSE very slow compared to other estimators</li>
 </ul>
-## Week 13<br>
-<li> We have show that a diagonal LDA perfrom better with data rather classic LDA</li>
+## Week 13 <br>
+<li> We have show that a diagonal LDA perfrom better with data rather classic LDA</ul>
+<li> Simulation study</ul>
+
 
 ## References
 

@@ -21,7 +21,7 @@ attr <- (attributes(data))$names
 mean<- array(NA, dim=c(dim(data$yes)[2], dim(data$yes)[3], length(attr)))
 #create test set and train set array, mean array
 for (name in attr) {
-  val<-partition(data[[name]],alpha)
+  val<-partition(data[[name]][c(1:dim(data[[name]])[1]*0.7),,],alpha)
   train_set<-abind(train_set,val$train,along=1)
   test_set<-abind(test_set,val$test,along=1)
   test_labels<-factor(c(test_labels,rep(i,dim(val$test)[1])),level=c(1:10))
@@ -36,13 +36,12 @@ for (name in attr) {
 
 #MLE of the data
 CMLE=cov1(train_set)
-CMLE<-cm2ca(ca2cm(CMLE)+sum(diag(ca2cm(CMLE)))/(dim(CMLE)[1]*dim(CMLE)[2])*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
 for (i in 1:dim(mean)[2]) {
   for(j in 1:dim(mean)[3])
-    w[,i,j]=solve(B[,i,,i],mean[,i,j])
+    w[,i,j]=solve(CMLE[,i,,i],mean[,i,j])
   
 }
 
@@ -74,15 +73,20 @@ CCMLE<- array(NA, dim=c(dim(data$yes)[2], dim(data$yes)[3],dim(data$yes)[2], dim
 for (name in attr) {
   val<-partition(data[[name]],alpha)
   CCMLE[,,,,i]<-cov1(val$train)
-  CCMLE[,,,,i]<-cm2ca(ca2cm(CCMLE[,,,,i])+sum(diag(ca2cm(CCMLE[,,,,i])))/1287*diag(rep(1,1287)),99,13)
   i<-i+1
+}
+i<-1
+CCMLE1<- array(NA, dim=c(dim(data$yes)[2], dim(data$yes)[3],dim(data$yes)[2], dim(data$yes)[3], length(attr)))
+for (i in 1:10) {
+  CCMLE1[,,,,i]<-0.4*CCMLE[,,,,i]+0.6*CMLE
+
 }
 
 #solve inverse problem for QDA
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
 for (i in 1:dim(mean)[2]) {
   for(j in 1:dim(mean)[3])
-    w[,i,j]=solve(CCMLE[,i,,i,j],mean[,i,j])
+    w[,i,j]=solve(CCMLE1[,i,,i,j],mean[,i,j])
 }
 
 #predict the value
@@ -100,7 +104,7 @@ ggplot(data = cm_melted, aes(x = True, y = Predicted, fill = value)) +
   scale_y_discrete(labels = attr,limits=attr) +
   theme_minimal() +
   theme(text = element_text(size = 14)) +
-  labs(title = "Confusion Matrix QDA", x = "True", y = "Predicted")
+  labs(title = "Confusion Matrix PPE lambda=0.6", x = "True", y = "Predicted")
 
 # Calculate the accuracy of the algorithm
 accuracy <- sum(diag(confusionMatrix(factor(predictions,level=c(1:10)), test_labels)$table)) / length(test_labels)
@@ -111,7 +115,6 @@ cat("Accuracy:", accuracy * 100, "%\n")
 
 # check the separable MLE
 CKMLE<- sMLE(train_set)
-CKMLE<-cm2ca(ca2cm(CKMLE)+sum(diag(ca2cm(CKMLE)))/1287*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -186,7 +189,7 @@ cat("Accuracy:", accuracy * 100, "%\n")
 
 # check the CSE
 CCSE<- cCSE(train_set)
-CCSE<-cm2ca(ca2cm(CCSE)+sum(diag(ca2cm(CCSE)))/1287*diag(rep(1,1287)),99,13)
+
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))

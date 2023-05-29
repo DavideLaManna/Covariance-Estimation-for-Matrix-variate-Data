@@ -1,5 +1,6 @@
 ### separable component decomposition
 library(covKCD) 
+library(MASS)
 
 #The R code provided performs a Separable Component Decomposition and Maximum 
 #Likelihood Estimation for covariance tensor structures. These are common methods 
@@ -225,7 +226,8 @@ I(min(eigen(B)$values)>0) # check
 A_half <- mat_root(A)
 B_half <- mat_root(B)
 
-N <- 100
+i<-7
+N <- 2^i
 K1 <- dim(A)[1]
 K2 <- dim(B)[2]
 X <- array(0,c(N,K1,K2))
@@ -237,11 +239,18 @@ Chat <- sample_cov(X)
 frobenius(Chat-C)/frobenius(C) # increase N to and re-run to see whether this error decreases
 
 # check least squares separable estimator
-Res <- scd_est(X,1)
-Chat <- Res$sigma[1] * aperm(outer(Res$A[1,,],Res$B[1,,]),c(1,3,2,4))
+Chat <- scdR(X,1)
 frobenius(Chat-C)/frobenius(C)
 
 # check the separable MLE
-Res <- sep_MLE(X)
-Chat <- aperm(outer(Res$A,Res$B),c(1,3,2,4))
+Chat <- sMLE(X)
 frobenius(Chat-C)/frobenius(C)
+
+# check the CSE
+Chat <-cCSE(X)
+frobenius(Chat-C)/frobenius(C)
+
+
+
+
+

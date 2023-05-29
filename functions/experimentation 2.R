@@ -236,3 +236,49 @@ ggplot(data = cm_melted, aes(x = True, y = Predicted, fill = value)) +
 accuracy <- sum(diag(confusionMatrix(factor(predictions,level=c(1:10)), test_labels)$table)) / length(test_labels)
 cat("Accuracy:", accuracy * 100, "%\n")
 
+
+
+
+
+
+#MLE of the data
+CMLE=cov1(train_set)
+
+KCD<-covKCD(ca2cm(CMLE),99,13)
+lambda=0.99
+#oracle bayes shrincage
+OCSE=cm2ca(msqrt(KCD$K)%*%(lambda*KCD$C+(1-lambda)*rep(1,1656369))%*%msqrt(KCD$K),99,13)
+
+
+#solve inverse problem for LDA 
+w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
+for (i in 1:dim(mean)[2]) {
+  for(j in 1:dim(mean)[3])
+    w[,i,j]=solve(OCSE[,i,,i],mean[,i,j])
+  
+}
+
+#predict the value
+predictions<-my_lda(test_set,mean,w)
+
+# Plot the confusion matrix
+cm <- as.matrix(confusionMatrix(factor(predictions,level=c(1:10)), test_labels)$table)
+cm_melted <- melt(cm)
+colnames(cm_melted) <- c("True", "Predicted", "value")
+ggplot(data = cm_melted, aes(x = True, y = Predicted, fill = value)) +
+  geom_tile() +
+  geom_text(aes(label = value), color = "black", size = 4) +
+  scale_fill_gradient(low = "white", high = "blue") +
+  scale_x_discrete(labels = attr,limits=attr) + 
+  scale_y_discrete(labels = attr,limits=attr) +
+  theme_minimal() +
+  theme(text = element_text(size = 14)) +
+  labs(title = "Confusion Matrix LDA OCSE 0.99", x = "True", y = "Predicted")
+
+# Calculate the accuracy of the algorithm
+accuracy <- sum(diag(confusionMatrix(factor(predictions,level=c(1:10)), test_labels)$table)) / length(test_labels)
+cat("Accuracy:", accuracy * 100, "%\n")
+
+
+
+
