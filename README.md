@@ -58,8 +58,8 @@ preparation of the mid-semester presentation
 </ul>
 
 ## Week 13<br>
-We have show that a diagonal LDA perfrom better with data rather classic LDA
-Simulation study
+<li>We have show that a diagonal LDA perfrom better with data rather classic LDA</li>
+<li>Simulation study</li>
 
 
 ## References
