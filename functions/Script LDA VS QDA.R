@@ -79,10 +79,10 @@ for (name in attr) {
 }
 i<-1
 
-#Here we evalutate PPE
-CCMLE1<- array(NA, dim=c(dim(data$yes)[2], dim(data$yes)[3],dim(data$yes)[2], dim(data$yes)[3], length(attr)))
+#Here we evalutate PPE comment this part to get normal QDA.
+CCMLE<- array(NA, dim=c(dim(data$yes)[2], dim(data$yes)[3],dim(data$yes)[2], dim(data$yes)[3], length(attr)))
 for (i in 1:10) {lambda=f[i]/(sum(f)+f[i]-p-1)
-  CCMLE1[,,,,i]<-lambda*CCMLE[,,,,i]+(1-lambda)*CMLE 
+  CCMLE[,,,,i]<-lambda*CCMLE[,,,,i]+(1-lambda)*CMLE 
 
 }
 
@@ -90,7 +90,7 @@ for (i in 1:10) {lambda=f[i]/(sum(f)+f[i]-p-1)
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
 for (i in 1:dim(mean)[2]) {
   for(j in 1:dim(mean)[3])
-    w[,i,j]=solve(CCMLE1[,i,,i,j],mean[,i,j])
+    w[,i,j]=solve(CCMLE[,i,,i,j],mean[,i,j])
 }
 
 #predict the value
