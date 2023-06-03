@@ -262,7 +262,6 @@ cat("Accuracy:", accuracy * 100, "%\n")
 
 # check least squares separable estimator R=1
 CKLSE1<- scdR(train_set,1)
-CKLSE1<-cm2ca(ca2cm(CKLSE1)+sum(diag(ca2cm(CKLSE1)))/1287*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -341,8 +340,6 @@ cat("Accuracy:", accuracy * 100, "%\n")
 
 # check least squares separable estimator R=2
 CKLSE2<- scdR(train_set,2)
-plotEigenvalues(CKLSE2)
-CKLSE2<-cm2ca(ca2cm(CKLSE2)+sum(diag(ca2cm(CKLSE2)))/1287*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -423,8 +420,6 @@ cat("Accuracy:", accuracy * 100, "%\n")
 
 # check least squares separable estimator R=3
 CKLSE3<- scdR(train_set,3)
-plotEigenvalues(CKLSE3)
-CKLSE3<-cm2ca(ca2cm(CKLSE3)+sum(diag(ca2cm(CKLSE3)))/1287*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))

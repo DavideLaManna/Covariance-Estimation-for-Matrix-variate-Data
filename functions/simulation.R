@@ -1,9 +1,9 @@
-source("~/SemesterProject/functions/functions.R") #Our estimator are store in this R files.
+source("~/Desktop/semester project/SemesterProject/functions/functions.R") #Our estimator are store in this R files.
 library(ggplot2)
 
 #In this first simulation we provide a separable covariance.
 
-K=25 #Number of independent run
+K=1 #Number of independent run
 A <- matrix(c(1,0.5,0.5,1), ncol=2)
 B <- matrix(c(1,-0.5,0,-0.5,1,0.2,0,0.2,1), ncol=3) 
 I(min(eigen(A)$values)>0) # check that A and B are positive definite.
@@ -97,20 +97,21 @@ theme(
   panel.grid.minor = element_line(colour = "grey90")
 )
 
-#Now we provide a not separable covariance matrix.
-#The fact that this matrix is not separable nor R separable for R<4
-#can be proven by compute the score for R=1,2,3.
-# Creation of a sample 6x6 positive definite matrix
-C <- matrix(c(4, 1, 2, 1, 0, 3,
-              1, 5, 0, 0, 2, 1,
-              2, 0, 3, 1, 1, 1,
-              1, 0, 1, 6, 0, 2,
-              0, 2, 1, 0, 5, 0,
-              3, 1, 1, 2, 0, 4), nrow = 6, ncol = 6, byrow = TRUE)
+#Now we provide a not separable covariance matrix  for R<4
+
+A1 <- matrix(c(1, 0.2, 0.2, 1), nrow = 2)
+A2 <- matrix(c(1, 0.4, 0.4, 1), nrow = 2)
+A3 <- matrix(c(1, 0.6, 0.6, 1), nrow = 2)
+A4 <- matrix(c(1, 0.8, 0.8, 1), nrow = 2)
+B1 <- matrix(c(1,0.2,0,0.2,1,0.8,0,0.8,1), nrow=3)
+B2 <- matrix(c(1,0.4,0,0.4,1,0.6,0,0.6,1), nrow=3)
+B3 <- matrix(c(1,0.6,0,0.6,1,0.4,0,0.4,1), nrow=3)
+B4 <- matrix(c(1,0.8,0,0.8,1,0.2,0,0.2,1), nrow=3)
+C <- kronecker(A1, B1)+kronecker(A2, B2)+kronecker(A3, B3)+kronecker(A4, B4)
 
 # Show that C is positive definite
 is_positive_definite <- I(min(eigen(C)$values) > 0)
-C<-cm2ca(C,2,3)
+C<-matrix2tensor(C,2,3)
 # Initialize vectors to store results
 LSSE1 <- rep(0,11)
 LSSE2<- rep(0,11)
@@ -126,7 +127,7 @@ for(i in 1:K){
   CSE_values <- c()
 for (i in 5:15) {
   N <- 2^i
-X<- array(mvrnorm(n=N,mu=rep(0,6),ca2cm(C)),dim=c(N,2,3))
+X<- array(mvrnorm(n=N,mu=rep(0,6),tensor2matrix(C)),dim=c(N,2,3))
 # check empirical cov
 Chat <- cov1(X)
 MLE_values <- c(MLE_values,frobenius(Chat-C)/frobenius(C))

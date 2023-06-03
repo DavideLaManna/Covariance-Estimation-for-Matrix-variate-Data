@@ -37,7 +37,7 @@ L=1/2
 #MLE of the data
 CMLE=cov1(train_set)
 #remove the comment symbol below if you want the result of the regularized problem
-#CMLE<-cm2ca(L*ca2cm(CMLE)+(1-L)*sum(diag(ca2cm(CMLE)))/(dim(CMLE)[1]*dim(CMLE)[2])*diag(rep(1,1287)),99,13)
+#CMLE<-matrix2tensor(L*tensor2matrix(CMLE)+(1-L)*sum(diag(tensor2matrix(CMLE)))/(dim(CMLE)[1]*dim(CMLE)[2])*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -73,7 +73,7 @@ cat("Accuracy:", accuracy * 100, "%\n")
 # check the separable MLE
 CKMLE<- sMLE(train_set)
 #remove the comment symbol below if you want the result of the regularized problem
-#CKMLE<-cm2ca(L*ca2cm(CKMLE)+(1-L)*sum(diag(ca2cm(CKMLE)))/1287*diag(rep(1,1287)),99,13)
+#CKMLE<-matrix2tensor(L*tensor2matrix(CKMLE)+(1-L)*sum(diag(tensor2matrix(CKMLE)))/1287*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -108,7 +108,7 @@ cat("Accuracy:", accuracy * 100, "%\n")
 # check the CSE
 CCSE<- cCSE(train_set)
 #remove the comment symbol below if you want the result of the regularized problem
-#CCSE<-cm2ca(L*ca2cm(CCSE)+(1-L)*sum(diag(ca2cm(CCSE)))/1287*diag(rep(1,1287)),99,13)
+#CCSE<-matrix2tensor(L*tensor2matrix(CCSE)+(1-L)*sum(diag(tensor2matrix(CCSE)))/1287*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -143,7 +143,7 @@ cat("Accuracy:", accuracy * 100, "%\n")
 # check least squares separable estimator R=1
 CKLSE1<- scdR(train_set,1)
 #remove the comment symbol below if you want the result of the regularized problem
-#CKLSE1<-cm2ca(L*ca2cm(CKLSE1)+(1-L)*sum(diag(ca2cm(CKLSE1)))/1287*diag(rep(1,1287)),99,13)
+#CKLSE1<-matrix2tensor(L*tensor2matrix(CKLSE1)+(1-L)*sum(diag(tensor2matrix(CKLSE1)))/1287*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -178,7 +178,7 @@ cat("Accuracy:", accuracy * 100, "%\n")
 # check least squares separable estimator R=2
 CKLSE2<- scdR(train_set,2)
 #remove the comment symbol below if you want the result of the regularized problem
-#CKLSE2<-cm2ca(L*ca2cm(CKLSE2)+(1-L)*sum(diag(ca2cm(CKLSE2)))/1287*diag(rep(1,1287)),99,13)
+#CKLSE2<-matrix2tensor(L*tensor2matrix(CKLSE2)+(1-L)*sum(diag(tensor2matrix(CKLSE2)))/1287*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -212,7 +212,7 @@ cat("Accuracy:", accuracy * 100, "%\n")
 # check least squares separable estimator R=3
 CKLSE3<- scdR(train_set,3)
 #remove the comment symbol below if you want the result of the regularized problem
-#CKLSE3<-cm2ca(L*ca2cm(CKLSE3)+(1-L)*sum(diag(ca2cm(CKLSE3)))/1287*diag(rep(1,1287)),99,13)
+#CKLSE3<-matrix2tensor(L*tensor2matrix(CKLSE3)+(1-L)*sum(diag(tensor2matrix(CKLSE3)))/1287*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
