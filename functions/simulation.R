@@ -3,7 +3,7 @@ library(ggplot2)
 
 #In this first simulation we provide a separable covariance.
 
-K=1 #Number of independent run
+K=25 #Number of independent run
 A <- matrix(c(1,0.5,0.5,1), ncol=2)
 B <- matrix(c(1,-0.5,0,-0.5,1,0.2,0,0.2,1), ncol=3) 
 I(min(eigen(A)$values)>0) # check that A and B are positive definite.
@@ -90,7 +90,7 @@ ggplot(df_melted, aes(x = N, y = value, color = variable)) +
   geom_line() +
   geom_point(aes(shape = variable), size = 3) +
   scale_x_continuous(trans = "log2") +
-  labs(x = "N", y = "Frobenius Norm", color = "Estimator", shape = "Estimator") +
+  labs(x = "N", y = "Relative Error", color = "Estimator", shape = "Estimator") +
   theme_minimal()
 theme(
   panel.grid.major = element_line(colour = "grey80"),
@@ -169,7 +169,7 @@ df <- data.frame(
   Separable1 = LSSE1,
   Separable2 = LSSE2,
   Separable3 = LSSE3,
-  empirical = MLE,
+  Empirical = MLE,
   CoreShrinkage = CSE
 )
 
@@ -181,7 +181,7 @@ ggplot(df_melted, aes(x = N, y = value, color = variable)) +
   geom_line() +
   geom_point(aes(shape = variable), size = 3) +
   scale_x_continuous(trans = "log2") +
-  labs(x = "N", y = "Frobenius Norm", color = "Estimator", shape = "Estimator") +
+  labs(x = "N", y = "Relative error", color = "Estimator", shape = "Estimator") +
   theme_minimal()
 theme(
   panel.grid.major = element_line(colour = "grey80"),
