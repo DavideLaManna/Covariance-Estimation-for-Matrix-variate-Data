@@ -18,8 +18,11 @@ test_set<-NULL
 test_labels<-NULL
 attr <- (attributes(data))$names
 mean<- array(NA, dim=c(dim(data$yes)[2], dim(data$yes)[3], length(attr)))
+p<-dim(data$yes)[2]*dim(data$yes)[3]
+f<-rep(NA,length(attr))
 #create test set and train set array, mean array
 for (name in attr) {
+  f[i]<-dim(data[[name]])[1] 
   val<-partition(data[[name]][c(1:dim(data[[name]])[1]*0.7),,],alpha)
   train_set<-abind(train_set,val$train,along=1)
   test_set<-abind(test_set,val$test,along=1)
@@ -75,9 +78,11 @@ for (name in attr) {
   i<-i+1
 }
 i<-1
+
+#Here we evalutate PPE
 CCMLE1<- array(NA, dim=c(dim(data$yes)[2], dim(data$yes)[3],dim(data$yes)[2], dim(data$yes)[3], length(attr)))
-for (i in 1:10) {
-  CCMLE1[,,,,i]<-0.4*CCMLE[,,,,i]+0.6*CMLE
+for (i in 1:10) {lambda=f[i]/(sum(f)+f[i]-p-1)
+  CCMLE1[,,,,i]<-lambda*CCMLE[,,,,i]+(1-lambda)*CMLE 
 
 }
 
@@ -103,7 +108,7 @@ ggplot(data = cm_melted, aes(x = True, y = Predicted, fill = value)) +
   scale_y_discrete(labels = attr,limits=attr) +
   theme_minimal() +
   theme(text = element_text(size = 14)) +
-  labs(title = "Confusion Matrix PPE lambda=0.6", x = "True", y = "Predicted")
+  labs(title = "Confusion Matrix PPE", x = "True", y = "Predicted")
 
 # Calculate the accuracy of the algorithm
 accuracy <- sum(diag(confusionMatrix(factor(predictions,level=c(1:10)), test_labels)$table)) / length(test_labels)
