@@ -2,9 +2,8 @@
 library(abind) #for concatenate the data
 library(caret) #for confusion matrix
 library(reshape2) #for melt function
-library(covKCD)  #for CSE estimation
-source("~/Desktop/semester project/SemesterProject/functions/LDA.R")
-source("~/Desktop/semester project/SemesterProject/functions/separable_estimators.R")
+#load the functions
+source("~/SemesterProject/functions/functions.R")
 
 #load the data
 data<-get(load("./MFCCs.RData"))

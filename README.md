@@ -61,6 +61,11 @@ preparation of the mid-semester presentation
 <li>We have show that a diagonal LDA perfrom better with data rather classic LDA</li>
 <li>Simulation study</li>
 
+## Dataset
+The dataset, after our preprocessing, is freely available at the link:
+<a href="https://www.icloud.com/iclouddrive/089IZUqjrhEvmTmnroIc5PpYA#MFCCs">MFCCs</a>
+
+
 
 ## References
 

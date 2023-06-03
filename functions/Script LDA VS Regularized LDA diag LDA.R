@@ -2,9 +2,8 @@
 library(abind) #for concatenate the data
 library(caret) #for confusion matrix
 library(reshape2) #for melt function
-library(covKCD)  #for CSE estimation
-source("~/Desktop/semester project/SemesterProject/functions/LDA.R")
-source("~/Desktop/semester project/SemesterProject/functions/separable_estimators.R")
+#load the functions
+source("~/SemesterProject/functions/functions.R")
 
 #load the data
 data<-get(load("./MFCCs.RData"))
@@ -30,13 +29,15 @@ for (name in attr) {
 }
 
 
-
+#set the value of lambda for the regularization:
+L=1/2
 
 
 
 #MLE of the data
 CMLE=cov1(train_set)
-CMLE<-cm2ca(0.99*ca2cm(CMLE)+0.01*sum(diag(ca2cm(CMLE)))/(dim(CMLE)[1]*dim(CMLE)[2])*diag(rep(1,1287)),99,13)
+#remove the comment symbol below if you want the result of the regularized problem
+#CMLE<-cm2ca(L*ca2cm(CMLE)+(1-L)*sum(diag(ca2cm(CMLE)))/(dim(CMLE)[1]*dim(CMLE)[2])*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -71,7 +72,8 @@ cat("Accuracy:", accuracy * 100, "%\n")
 
 # check the separable MLE
 CKMLE<- sMLE(train_set)
-CKMLE<-cm2ca(ca2cm(CKMLE)+sum(diag(ca2cm(CKMLE)))/1287*diag(rep(1,1287)),99,13)
+#remove the comment symbol below if you want the result of the regularized problem
+#CKMLE<-cm2ca(L*ca2cm(CKMLE)+(1-L)*sum(diag(ca2cm(CKMLE)))/1287*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -105,7 +107,8 @@ cat("Accuracy:", accuracy * 100, "%\n")
 
 # check the CSE
 CCSE<- cCSE(train_set)
-CCSE<-cm2ca(ca2cm(CCSE)+sum(diag(ca2cm(CCSE)))/1287*diag(rep(1,1287)),99,13)
+#remove the comment symbol below if you want the result of the regularized problem
+#CCSE<-cm2ca(L*ca2cm(CCSE)+(1-L)*sum(diag(ca2cm(CCSE)))/1287*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -139,7 +142,8 @@ cat("Accuracy:", accuracy * 100, "%\n")
 
 # check least squares separable estimator R=1
 CKLSE1<- scdR(train_set,1)
-CKLSE1<-cm2ca(0.01*ca2cm(CKLSE1)+0.99*sum(diag(ca2cm(CKLSE1)))/1287*diag(rep(1,1287)),99,13)
+#remove the comment symbol below if you want the result of the regularized problem
+#CKLSE1<-cm2ca(L*ca2cm(CKLSE1)+(1-L)*sum(diag(ca2cm(CKLSE1)))/1287*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -173,7 +177,8 @@ cat("Accuracy:", accuracy * 100, "%\n")
 
 # check least squares separable estimator R=2
 CKLSE2<- scdR(train_set,2)
-CKLSE2<-cm2ca(ca2cm(CKLSE2)+sum(diag(ca2cm(CKLSE2)))/1287*diag(rep(1,1287)),99,13)
+#remove the comment symbol below if you want the result of the regularized problem
+#CKLSE2<-cm2ca(L*ca2cm(CKLSE2)+(1-L)*sum(diag(ca2cm(CKLSE2)))/1287*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -206,7 +211,8 @@ cat("Accuracy:", accuracy * 100, "%\n")
 
 # check least squares separable estimator R=3
 CKLSE3<- scdR(train_set,3)
-CKLSE3<-cm2ca(ca2cm(CKLSE3)+sum(diag(ca2cm(CKLSE3)))/1287*diag(rep(1,1287)),99,13)
+#remove the comment symbol below if you want the result of the regularized problem
+#CKLSE3<-cm2ca(L*ca2cm(CKLSE3)+(1-L)*sum(diag(ca2cm(CKLSE3)))/1287*diag(rep(1,1287)),99,13)
 
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
@@ -241,22 +247,20 @@ cat("Accuracy:", accuracy * 100, "%\n")
 
 
 
-#MLE of the data
-CMLE=cov1(train_set)
-
-KCD<-covKCD(ca2cm(CMLE),99,13)
-lambda=0.99
-#oracle bayes shrincage
-OCSE=cm2ca(msqrt(KCD$K)%*%(lambda*KCD$C+(1-lambda)*rep(1,1656369))%*%msqrt(KCD$K),99,13)
 
 
+#Diagonal LDA
+A<-rep(0,n*m)
+for(i in 1:1287){
+  A[i]<-var(matrix(train_set,ncol=n*m)[,i])
+}
+#we transform the matrix into an array just to make the data congruent with our own classification algorithm
+B<-array(diag(A),c(n,m,n,m))
 #solve inverse problem for LDA 
 w<-array(NA,dim=c(dim(mean)[1],dim(mean)[2],length(attr)))
 for (i in 1:dim(mean)[2]) {
   for(j in 1:dim(mean)[3])
-    w[,i,j]=solve(OCSE[,i,,i],mean[,i,j])
-  
-}
+    w[,i,j]=solve(B[,i,,i],mean[,i,j])}
 
 #predict the value
 predictions<-my_lda(test_set,mean,w)
@@ -273,12 +277,9 @@ ggplot(data = cm_melted, aes(x = True, y = Predicted, fill = value)) +
   scale_y_discrete(labels = attr,limits=attr) +
   theme_minimal() +
   theme(text = element_text(size = 14)) +
-  labs(title = "Confusion Matrix LDA OCSE 0.99", x = "True", y = "Predicted")
+  labs(title = "Confusion Matrix diag LDA", x = "True", y = "Predicted")
 
 # Calculate the accuracy of the algorithm
 accuracy <- sum(diag(confusionMatrix(factor(predictions,level=c(1:10)), test_labels)$table)) / length(test_labels)
 cat("Accuracy:", accuracy * 100, "%\n")
-
-
-
 

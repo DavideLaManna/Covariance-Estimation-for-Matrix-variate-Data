@@ -1,12 +1,14 @@
-source("~/Desktop/semester project/SemesterProject/functions/separable_estimators.R")
+source("~/SemesterProject/functions/functions.R") #Our estimator are store in this R files.
 library(ggplot2)
-library(MASS)
 
-# random seed for the reproducibility 
-K=25
+#In this first simulation we provide a separable covariance.
+
+K=25 #Number of independent run
 A <- matrix(c(1,0.5,0.5,1), ncol=2)
 B <- matrix(c(1,-0.5,0,-0.5,1,0.2,0,0.2,1), ncol=3) 
-I(min(eigen(B)$values)>0) # check
+I(min(eigen(A)$values)>0) # check that A and B are positive definite.
+I(min(eigen(B)$values)>0)
+
 
 A_half <- mat_root(A)
 B_half <- mat_root(B)
@@ -14,7 +16,7 @@ C <- aperm(outer(A,B),c(1,3,2,4))
 K1 <- dim(A)[1]
 K2 <- dim(B)[2]
 
-# Initialize vectors to store results
+# Initialize vectors to store results, we store 11 different value of N.
 LSSE1 <- rep(0,11)
 LSSE2<- rep(0,11)
 LSSE3<- rep(0,11)
@@ -36,7 +38,7 @@ for (i in 5:15) {
   
   
   # check empirical cov
-  Chat <- sample_cov(X)
+  Chat <- cov1(X)
   MLE_values <- c(MLE_values,frobenius(Chat-C)/frobenius(C))
   
   
@@ -95,6 +97,9 @@ theme(
   panel.grid.minor = element_line(colour = "grey90")
 )
 
+#Now we provide a not separable covariance matrix.
+#The fact that this matrix is not separable nor R separable for R<4
+#can be proven by compute the score for R=1,2,3.
 # Creation of a sample 6x6 positive definite matrix
 C <- matrix(c(4, 1, 2, 1, 0, 3,
               1, 5, 0, 0, 2, 1,
@@ -123,7 +128,7 @@ for (i in 5:15) {
   N <- 2^i
 X<- array(mvrnorm(n=N,mu=rep(0,6),ca2cm(C)),dim=c(N,2,3))
 # check empirical cov
-Chat <- sample_cov(X)
+Chat <- cov1(X)
 MLE_values <- c(MLE_values,frobenius(Chat-C)/frobenius(C))
 
 

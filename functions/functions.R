@@ -1,13 +1,15 @@
-### separable component decomposition
-library(covKCD) 
+### separable component decomposition and LDA algorithm
+#in this file there are all the functions used for the experimentation present in the github:
+#  https://github.com/DavideLaManna/Covariance-Estimation-for-Matrix-variate-Data
+library(covKCD) #This library provide Covariance Shrinkage estimator developed
+#by Hoff et. Al in their article, allows to implement the Core Shrinkage estimation 
+#algorithm, i.e. find the best convex combination between MLE and separable MLE
 library(MASS)
 
-#The R code provided performs a Separable Component Decomposition and Maximum 
-#Likelihood Estimation for covariance tensor structures. These are common methods 
-#in multivariate analysis and are used for estimating the covariance structure 
-#of a tensor-valued random variable.
 
 #The main functions included in this code are:
+#my_lda: compute Discriminant analysis for both QDA and LDA cases, it requires
+#that the inverse problem C_i*w_i=mean_i be solved first
 #scd_est: This function calculates the separable component decomposition of a
 #given tensor. For R=1, it calculates the least squares separable estimator. 
 #The function takes as input a tensor X, a positive integer R (the number of 
@@ -21,7 +23,7 @@ library(MASS)
 #scd_est and sep_MLE.
 #scdR and sMLE: These are wrapper functions for scd_est and sep_MLE, respectively,
 #which perform the decomposition and return the estimated covariance tensor.
-#logD, sample_cov, tensor2matrix, matrix2tensor,mat_root, cCSE, and frobenius: 
+#logD, cov1, tensor2matrix, matrix2tensor,mat_root, cCSE, plot_eigenvalues and frobenius: 
 #These are utility functions used for the calculation and manipulation of tensors
 #and matrices.
 
@@ -30,7 +32,52 @@ library(MASS)
 
 
 
+# Discriminant analysis algorithm once the inverse problem is solved.
+my_lda <- function(M, u,w) {
+  # Get the row of array
+  k <- dim(M)[1]
+  #get the number of levels
+  h<-dim(w)[3]
+  # Create an empty vector to store the indicator values
+  indicator_values <- vector("numeric", k)
+  
+  # Calculate the label for each row in M
+  # the label function calculates the sum of k for the set indicator 
+  # "s_j(M[i,,])z>s_l(M[i,,] \forall l\neq j \in \{1,...,k\}"
+  for (i in 1:k) {
+    label<-0
+    for(j in 1:h){
+      product<-1
+      for(l in 1:h){
+        if(l!=j){
+          product<-product*indicator(M[i,,], u[,,j], u[,,l],w[,,j],w[,,l])
+        }
+      }
+      label<-label+j*product
+    }
+    indicator_values[i]<-label
+  }
+  
+  return(indicator_values)
+}
 
+
+# Define the indicator function
+indicator <- function(x, u1, u2,w1,w2) {
+  
+  
+  # Calculate the difference of two score
+  dot_product <- sum(u1* w1) -2*sum(x * w1) -sum(u2*w2)+2*sum(x * w2) 
+  
+  # Calculate the indicator value
+  if (dot_product > 0) {
+    indicator_value <- 0
+  } else {
+    indicator_value <- 1
+  }
+  
+  return(indicator_value)
+}
 
 
 
@@ -136,7 +183,40 @@ T2_inv <- function (X,A,sigma,N,K1,K2){
   return(Res)
 }
 
+
+
+#Calculation of the covariance matrix for an array of 3 dimensions along the first dimension
+cov1 <- function(M) {
+  n2 <- dim(M)[2]
+  n3 <- dim(M)[3]
+  
+  cov1 <- array(0, dim = c(n2, n3, n2, n3))
+  
+  for (i in 1:n3) {
+    for (j in 1:n3) {
+      cov1[, i, , j] <- cov(M[,,i],M[,,j])
+    }
+  }
+  
+  return(cov1)
+}
+
+
 ### utils
+
+# partition in train and test set 
+#alpha is percentage of data allocated to the training
+partition <- function(M,alpha) {
+  nrow<-dim(M)[1]
+  index <- sample(1:nrow, size = nrow, replace = FALSE)
+  train_index <- index[1:(alpha*nrow)]
+  test_index <- index[(alpha*nrow+1):nrow]
+  train <- M[train_index,,]
+  test <- M[test_index,,]
+  return(list(train=train, test=test))
+}
+
+
 
 
 # R separable estimator lse
@@ -175,15 +255,6 @@ logD <-function(mat){
 return(sum(log(abs(eigen(mat)$values))))
 }
 
-sample_cov <- function(X){
-  N <- dim(X)[1]
-  C <- array(0,rep(dim(X)[2:3],2))
-  for(n in 1:N){
-    C <- C + outer(X[n,,],X[n,,])
-  }
-  return(C/N)
-}
-
 tensor2matrix <- function(C){
   # transforms a covariance tensor into the proper covariance matrix
   K1 <- dim(C)[1]
@@ -193,22 +264,46 @@ tensor2matrix <- function(C){
 }
 
 matrix2tensor <- function(C_mat,K1,K2){
-  # transforms a covariance matrix into the proper covariance tensor, dimensions must be provided
+  # transforms a covariance matrix into the proper covariance tensor, 
+  #dimensions must be provided
   C <- array(c(C_mat),c(K1,K2,K1,K2))
   return(C)
 }
 
 
-
+#in this code we use the covCSE developed by Hoff et. al to output an array
+#instead of a matrix
 cCSE <- function(K){
   n<-dim(K)[1]
   p1<-dim(K)[2]
   p2<-dim(K)[3]
 
-  return(cm2ca(covCSE(K,n,p1,p2),p1,p2))
+  return(matrix2tensor(covCSE(K,n,p1,p2),p1,p2))
 }
   
+#Function to generate the eigenvalue plot
+
+plotEigenvalues <- function(mat) {
+  if(!is.matrix(mat)) {
+    mat=tensor2matrix(mat)
+  }
   
+  # Calculation of the eigenvalues
+  eigenvalues <- eigen(mat)$values
+  
+  # creation of a dataframe for the plot
+  df <- data.frame(index = 1:length(eigenvalues), value = eigenvalues)
+  
+  # Creation of the plot
+  ggplot(df, aes(x = index, y = value)) +
+    geom_point() +
+    scale_y_log10()+
+    labs(title = "Eigenvalues of the matrix",
+         x = "Index",
+         y = "Eigenvalue") +
+    theme_minimal()
+}
+
   
   
 frobenius <- function(X){
@@ -235,8 +330,9 @@ for(n in 1:N) X[n,,] <- A_half %*% matrix(rnorm(K1*K2),ncol=K2) %*% B_half
 
 # check empirical cov
 C <- aperm(outer(A,B),c(1,3,2,4))
-Chat <- sample_cov(X)
-frobenius(Chat-C)/frobenius(C) # increase N to and re-run to see whether this error decreases
+Chat <- cov1(X)
+frobenius(Chat-C)/frobenius(C) 
+# increase N to and re-run to see whether this error decreases
 
 # check least squares separable estimator
 Chat <- scdR(X,1)
