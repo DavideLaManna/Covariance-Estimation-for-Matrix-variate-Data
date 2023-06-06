@@ -1,7 +1,7 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # Covariance Estimation for Matrix-variate Data
-Project results are reproducible through the "function" folder
+Project results are reproducible through the "functions" folder
 
 ## Dataset
 The dataset, after our preprocessing, is freely available at the link:
